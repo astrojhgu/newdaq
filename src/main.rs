@@ -8,10 +8,12 @@ use etherparse::{
 };
 use pnet::datalink::{channel, interfaces, Channel, ChannelType, Config};
 
-use newdaq::{mac2array, str2macarray};
+use newdaq::{mac2array, str2macarray, DataFrame, PKT_LEN, MetaData};
 const SPEC_PER_SEC: usize = 122071;
 
 fn main() {
+    println!("{}", std::mem::size_of::<newdaq::MetaData>());
+    println!("{}", std::mem::size_of::<newdaq::DataFrame>());
     let matches = Command::new("capture")
         .arg(
             Arg::new("dev_name")
@@ -41,92 +43,31 @@ fn main() {
         promiscuous: true,
     };
 
-    let (mut tx, mut rx) =
+    let (mut _tx, mut rx) =
         if let Channel::Ethernet(tx, rx) = channel(&dev, cfg).expect("canot open channel") {
             (tx, rx)
         } else {
             panic!();
         };
 
-    let x = rx.next().unwrap();
-    let sliced_packet = SlicedPacket::from_ethernet(x);
+    let mut frame_buf=DataFrame::default();
 
-    match sliced_packet {
-        Err(value) => println!("Err {:?}", value),
-        Ok(value) => {
-            println!("Ok");
-            use etherparse::InternetSlice::*;
-            use etherparse::LinkSlice::*;
-            use etherparse::TransportSlice::*;
-            use etherparse::VlanSlice::*;
+    let frame_buf_ptr=unsafe{std::slice::from_raw_parts_mut((&mut frame_buf) as *mut DataFrame as *mut u8, std::mem::size_of::<DataFrame>())};
+    let mut last_meta_data=MetaData::default();        
+    loop {
+        let x = rx.next().unwrap();
+        if x.len()==PKT_LEN{
+            frame_buf_ptr.clone_from_slice(x);
+            //eprintln!("{} {} {} {} {} {}", frame_buf.meta_data.bid1, frame_buf.meta_data.pid1, frame_buf.meta_data.bid2, frame_buf.meta_data.pid2, frame_buf.meta_data.fcnt, frame_buf.meta_data.gcnt);
 
-            match value.link {
-                Some(Ethernet2(value)) => println!(
-                    "  Ethernet2 {:?} => {:?}",
-                    value.source(),
-                    value.destination()
-                ),
-                None => {}
+            if last_meta_data.gcnt+1!=frame_buf.meta_data.gcnt{
+                println!("{} pkts dropped", frame_buf.meta_data.gcnt-1-last_meta_data.gcnt);
             }
 
-            match value.vlan {
-                Some(SingleVlan(value)) => println!("  SingleVlan {:?}", value.vlan_identifier()),
-                Some(DoubleVlan(value)) => println!(
-                    "  DoubleVlan {:?}, {:?}",
-                    value.outer().vlan_identifier(),
-                    value.inner().vlan_identifier()
-                ),
-                None => {}
+            if frame_buf.meta_data.fcnt==819{
+                break;
             }
-
-            match value.ip {
-                Some(Ipv4(value, extensions)) => {
-                    println!(
-                        "  Ipv4 {:?} => {:?}",
-                        value.source_addr(),
-                        value.destination_addr()
-                    );
-                    if false == extensions.is_empty() {
-                        println!("    {:?}", extensions);
-                    }
-                }
-                Some(Ipv6(value, extensions)) => {
-                    println!(
-                        "  Ipv6 {:?} => {:?}",
-                        value.source_addr(),
-                        value.destination_addr()
-                    );
-                    if false == extensions.is_empty() {
-                        println!("    {:?}", extensions);
-                    }
-                }
-                None => {}
-            }
-            println!("payload len: {}", value.payload.len());
-            match value.transport {
-                Some(Udp(value)) => {
-                    println!(
-                        "  UDP {:?} -> {:?}",
-                        value.source_port(),
-                        value.destination_port()
-                    );
-                    println!("{:?}", value.to_header());
-                }
-                Some(Tcp(value)) => {
-                    println!(
-                        "  TCP {:?} -> {:?}",
-                        value.source_port(),
-                        value.destination_port()
-                    );
-                    let options: Vec<Result<TcpOptionElement, TcpOptionReadError>> =
-                        value.options_iterator().collect();
-                    println!("    {:?}", options);
-                }
-                Some(Unknown(ip_protocol)) => {
-                    println!("  Unknwon Protocol (ip protocol number {:?}", ip_protocol)
-                }
-                None => {}
-            }
-        }
+            last_meta_data=frame_buf.meta_data;
+        }        
     }
 }
