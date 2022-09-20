@@ -63,7 +63,7 @@ fn main() {
         let mut corr_prod=vec![(0,0); NCORR];
         let mut now=Local::now();
         loop{
-            let frame_buf1:DataFrame=receiver.recv().unwrap();
+            let mut frame_buf1:DataFrame=receiver.recv().unwrap();
 
             if last_meta_data.gcnt + 1 != frame_buf1.meta_data.gcnt {
                 dropped = true;
@@ -97,10 +97,20 @@ fn main() {
                 + frame_buf1.meta_data.pcnt as usize * NCH_PER_PKT;
             let port_id1=frame_buf1.meta_data.bid1 as usize*NPORT_PER_BD+frame_buf1.meta_data.pid1 as usize;
             let port_id2=frame_buf1.meta_data.bid2 as usize*NPORT_PER_BD+frame_buf1.meta_data.pid2 as usize;
+
+            if frame_buf1.meta_data.bid1!=frame_buf1.meta_data.bid2{
+                frame_buf1.payload.chunks_exact_mut(2).for_each(|x| {
+                    let y=x[0];
+                    x[0]=x[1];
+                    x[1]=y;
+                })
+            }
+
             
             data_buf[offset..offset+NCH_PER_PKT].clone_from_slice(&frame_buf1.payload);
 
             if port_id2<port_id1{
+
                 data_buf[offset..offset+NCH_PER_PKT].iter_mut().for_each(|x|{
                     x.im=-x.im;
                 });
