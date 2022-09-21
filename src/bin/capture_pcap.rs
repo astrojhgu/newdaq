@@ -1,4 +1,8 @@
-use clap::{Arg, Command};
+use serde::{Serialize, Deserialize};
+
+use serde_yaml::from_reader;
+
+use clap::{Arg, Command, Parser};
 
 use num_complex::Complex;
 
@@ -12,19 +16,37 @@ use crossbeam::channel::bounded;
 
 use newdaq::{DataFrame, MetaData, NCH, NCH_PER_PKT, NCORR, PKT_LEN, NPORT_PER_BD};
 
-fn main() {
-    let matches = Command::new("capture")
-        .arg(
-            Arg::new("dev_name")
-                .short('d')
-                .long("dev")
-                .takes_value(true)
-                .value_name("dev name")
-                .required(true),
-        )
-        .get_matches();
 
-    let dev_name = matches.value_of("dev_name").unwrap();
+/// Simple program to greet a person
+#[derive(Parser, Debug)]
+#[clap(author, version, about, long_about = None)]
+struct Args {
+   /// Name of the person to greet
+   #[clap(short='c', long="cfg", value_parser)]
+   cfg: String
+}
+
+#[derive(Clone, Deserialize, Serialize, Debug)]
+struct Cfg{
+    dev: String
+    , out_dir: Vec<std::path::PathBuf>
+    , gbytes_per_day: usize
+    , stations: Vec<String>
+}
+
+
+fn main() {
+    let args=Args::parse();
+
+    let mut cfg_file=std::fs::File::open(args.cfg).unwrap();
+
+    let cfg:Cfg=from_reader(&mut cfg_file).unwrap();
+
+    assert_eq!(cfg.stations.len(), 40);
+
+    println!("{:?}", cfg);
+
+    let dev_name = cfg.dev;
 
     // get the default Device
     let device = pcap::Device::list()

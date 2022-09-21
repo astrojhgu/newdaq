@@ -1,5 +1,6 @@
-use std::default::Default;
-
+use std::{default::Default, path::PathBuf};
+use chrono::{offset::Local, Date, Timelike, DateTime};
+use sysinfo::{NetworkExt, NetworksExt, ProcessExt, System, SystemExt, DiskExt};
 use pnet::datalink::MacAddr;
 use num_complex::Complex;
 pub const NCH: usize=8192;
@@ -55,3 +56,45 @@ impl Default for DataFrame{
         DataFrame { meta_data: MetaData::default(), payload: [Complex::<f32>::default(); NCH_PER_PKT] }
     }
 }
+
+pub struct StorageMgr{
+    pub pool: Vec<PathBuf>, 
+    pub today: Date<Local>, 
+    pub gbytes_per_day: usize,
+}
+
+impl StorageMgr{
+    pub fn new(pool: Vec<PathBuf>, gbytes_per_day: usize)->Self{
+        let today=Local::today().pred();
+        Self { pool, today, gbytes_per_day }
+    }
+
+    pub fn get_out_dir(&mut self, now: DateTime<Local>)->PathBuf{        
+        let today=now.date();
+        if today!=self.today{
+            println!("Yesterday is {}, today is {}", self.today, today);
+            self.today=today;
+                        
+            let mut sys = System::new_all();
+            sys.refresh_all();
+
+            loop{
+                if sys.disks().iter().any(|d| d.mount_point()==self.pool.first().unwrap() && {
+                    let gbytes_to_write=(1.0-now.num_seconds_from_midnight() as f64/86400_f64)*(self.gbytes_per_day as f64);
+                    let gbytes_available=d.available_space()/1024_u64.pow(3);
+                    println!("{:?}: {} gbytes to write, {} gbytes available", d.mount_point(), gbytes_to_write, gbytes_available);
+                    gbytes_available as f64 > gbytes_to_write
+                }
+                    
+            ){
+                    break;
+                }
+                else{
+                    self.pool.rotate_left(1);
+                }
+            }
+        }
+        self.pool.first().unwrap().to_owned()
+    }
+}
+
