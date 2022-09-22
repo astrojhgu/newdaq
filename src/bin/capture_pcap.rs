@@ -91,6 +91,10 @@ fn main() {
                 dropped = true;
             }
 
+            if !((last_meta_data.fcnt==819 && frame_buf1.meta_data.fcnt==0) || last_meta_data.fcnt+1==frame_buf1.meta_data.fcnt) {
+                println!("fcnt not continuous");
+            }
+
             //eprintln!("{} {} {} {} {} {}", bid1, pid1, bid2, pid2, pcnt, gcnt);
             //std::process::exit(0);
             if frame_buf1.meta_data.fcnt == 0 && frame_buf1.meta_data.pcnt == 0 {

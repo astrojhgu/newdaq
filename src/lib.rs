@@ -1,7 +1,7 @@
 use std::{default::Default, path::PathBuf};
 use chrono::{offset::Local, Date, Timelike, DateTime};
 use sysinfo::{NetworkExt, NetworksExt, ProcessExt, System, SystemExt, DiskExt};
-use pnet::datalink::MacAddr;
+
 use num_complex::Complex;
 pub const NCH: usize=8192;
 pub const NCH_PER_PKT:usize=8192/8;
@@ -10,10 +10,6 @@ pub const PKT_LEN:usize=std::mem::size_of::<DataFrame>();
 
 pub const NANTS:usize=40;
 pub const NCORR:usize=NANTS*(NANTS+1)/2;
-
-pub fn mac2array(mac: &MacAddr) -> [u8; 6] {
-    [mac.0, mac.1, mac.2, mac.3, mac.4, mac.5]
-}
 
 pub fn str2macarray(mac: &str) -> [u8; 6] {
     let mut result = [0_u8; 6];
