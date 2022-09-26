@@ -136,7 +136,7 @@ fn main() {
                         )
                     };
 
-                    let mut outfile = File::create("./a.bin").unwrap();
+                    let mut outfile = File::create("/dev/shm/dump.bin").unwrap();
                     outfile.write_all(disk_data).unwrap();
 
                     let mut corr_prod_file = File::create("corr_prod.txt").unwrap();
