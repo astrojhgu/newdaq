@@ -89,6 +89,7 @@ fn main() {
 
             if last_meta_data.gcnt + 1 != frame_buf1.meta_data.gcnt {
                 dropped = true;
+                println!("{} packets dropped", frame_buf1.meta_data.gcnt-last_meta_data.gcnt + 1);
             }
 
             if !((last_meta_data.fcnt==819 && frame_buf1.meta_data.fcnt==0) || last_meta_data.fcnt+1==frame_buf1.meta_data.fcnt) {
