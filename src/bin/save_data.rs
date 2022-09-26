@@ -6,7 +6,12 @@ use clap::Parser;
 
 use num_complex::Complex;
 
-use std::{fs::File, io::Write, path::PathBuf};
+use std::{
+    fs::File,
+    io::Write,
+    path::PathBuf,
+    sync::{Arc, RwLock},
+};
 
 use chrono::offset::Local;
 
@@ -75,6 +80,18 @@ fn main() {
 
     let (sender, receiver) = bounded(16384);
 
+    //let exit=Arc::new(Mutex::new(false));
+    let exit = Arc::new(RwLock::new(false));
+
+    let exit1 = Arc::clone(&exit);
+
+    ctrlc::set_handler(move || {
+        eprintln!("Waiting for data writing finishing");
+        *exit1.write().unwrap() = true;
+    })
+    .unwrap();
+
+    let exit1 = Arc::clone(&exit);
     let _ = std::thread::spawn(move || {
         let mut last_meta_data = MetaData::default();
         let mut corr_prod = vec![(0, 0); NCORR];
@@ -82,7 +99,19 @@ fn main() {
         let mut max_nmsg = 0;
         loop {
             max_nmsg = max_nmsg.max(receiver.len());
+
+            let ex = *exit1.read().unwrap();
+            if ex {
+                println!("exit from point 1");
+                break;
+            }
+
             let frame_buf1: DataFrame = receiver.recv().unwrap();
+
+            if ex {
+                println!("exit from point 2");
+                break;
+            }
 
             if last_meta_data.gcnt + 1 != frame_buf1.meta_data.gcnt {
                 dropped = true;
@@ -189,7 +218,7 @@ fn main() {
         }
     });
 
-    loop {
+    while !*exit.read().unwrap() {
         match cap.next_packet() {
             Ok(pkt) if pkt.data.len() == PKT_LEN => {
                 let mut frame_buf1 = DataFrame::default();
