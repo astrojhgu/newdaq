@@ -85,14 +85,17 @@ fn main() {
 
     let mut data_buf = vec![Complex::<f32>::default(); NCH * NCORR];
 
-    let (sender, receiver)=bounded(1024);
+    let (sender, receiver)=bounded(16384);
 
     let _=std::thread::spawn(move ||{
         let mut last_meta_data = MetaData::default();
         let mut corr_prod=vec![(0,0); NCORR];
         let mut now=Local::now();
+        let mut max_nmsg=0;
         loop{
-            let mut frame_buf1:DataFrame=receiver.recv().unwrap();
+            max_nmsg=max_nmsg.max(receiver.len());
+            let frame_buf1:DataFrame=receiver.recv().unwrap();
+            
 
             if last_meta_data.gcnt + 1 != frame_buf1.meta_data.gcnt {
                 dropped = true;
@@ -101,7 +104,11 @@ fn main() {
 
             //eprintln!("{} {} {} {} {} {}", bid1, pid1, bid2, pid2, pcnt, gcnt);
             //std::process::exit(0);
+            
             if frame_buf1.meta_data.fcnt == 0 && frame_buf1.meta_data.pcnt == 0 {
+                println!("Max queue len: {}", max_nmsg);
+                max_nmsg=0;
+                
                 if !dropped {
                     //write data
                     let outdir=storage.get_out_dir(now);
