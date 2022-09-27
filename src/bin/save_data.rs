@@ -23,9 +23,13 @@ use newdaq::{DataFrame, MetaData, StorageMgr, NCH, NCH_PER_PKT, NCORR, NPORT_PER
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 struct Args {
-    /// Name of the person to greet
+    /// config
     #[clap(short = 'c', long = "cfg", value_parser)]
     cfg: String,
+
+    /// If dry run
+    #[clap(short('d'), long("dry"), action)]
+    dry_run: bool,
 }
 
 #[derive(Clone, Deserialize, Serialize, Debug)]
@@ -42,6 +46,12 @@ fn main() {
     let mut cfg_file = std::fs::File::open(args.cfg).unwrap();
 
     let cfg: Cfg = from_reader(&mut cfg_file).unwrap();
+
+    let dry_run = args.dry_run;
+
+    if dry_run {
+        println!("Warning! Dry run");
+    }
 
     assert_eq!(cfg.stations.len(), 40);
 
@@ -124,20 +134,23 @@ fn main() {
             if frame_buf1.meta_data.fcnt == 0 && frame_buf1.meta_data.pcnt == 0 {
                 println!("Max queue len: {}", max_nmsg);
                 max_nmsg = 0;
+                let disk_data = unsafe {
+                    std::slice::from_raw_parts(
+                        data_buf.as_ptr() as *const u8,
+                        data_buf.len() * std::mem::size_of::<Complex<f32>>(),
+                    )
+                };
 
-                if !dropped {
+                let mut outfile = File::create("/dev/shm/dump.bin").unwrap();
+                outfile.write_all(disk_data).unwrap();
+
+                if !dropped && !dry_run {
                     //write data
                     let outdir = storage.get_out_dir(now);
 
-                    let disk_data = unsafe {
-                        std::slice::from_raw_parts(
-                            data_buf.as_ptr() as *const u8,
-                            data_buf.len() * std::mem::size_of::<Complex<f32>>(),
-                        )
-                    };
+                    
 
-                    let mut outfile = File::create("/dev/shm/dump.bin").unwrap();
-                    outfile.write_all(disk_data).unwrap();
+                    
 
                     let mut corr_prod_file = File::create("corr_prod.txt").unwrap();
                     for (i, p) in corr_prod.iter().enumerate() {
@@ -148,6 +161,7 @@ fn main() {
                     let date_str = format!("{}", now.format("%Y%m%d"));
                     let time_file_name = format!("time-0-{}.txt", date_str);
                     let time_file_path = outdir.join(time_file_name);
+
                     let mut time_file = std::fs::OpenOptions::new()
                         .create(true)
                         .append(true)
@@ -177,8 +191,10 @@ fn main() {
                     }
 
                     data_buf.iter_mut().for_each(|x| *x = Complex::default()); //reset all values to zero
-                } else {
-                    println!("Data dropped, skip writting");
+                } else if dropped && !dry_run{
+                    println!("*****Data dropped, skip writting*****");
+                } else if dry_run{
+                    println!("dryrun, skip writting");
                 }
                 assert_eq!(frame_buf1.meta_data.gcnt % NCORR as u32, 0);
                 now = Local::now();
@@ -215,6 +231,13 @@ fn main() {
             }
 
             last_meta_data = frame_buf1.meta_data;
+        }
+    });
+
+    let _ = std::thread::spawn(||{
+        loop{
+            std::thread::sleep(std::time::Duration::from_secs(1));
+            eprintln!(".");
         }
     });
 
