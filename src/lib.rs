@@ -1,13 +1,16 @@
 use chrono::{offset::Local, Date, DateTime, Timelike};
-use std::{default::Default, path::PathBuf};
+use std::{default::Default, fs::File, path::PathBuf};
 use sysinfo::{DiskExt, System, SystemExt};
 
 use num_complex::Complex;
+
+pub mod ctrl_msg;
+
 pub const NCH: usize = 8192;
 pub const NCH_PER_PKT: usize = 8192 / 8;
 pub const NPORT_PER_BD: usize = 8;
 pub const PKT_LEN: usize = std::mem::size_of::<DataFrame>();
-
+pub const NBOARD: usize = 5;
 pub const NANTS: usize = 40;
 pub const NCORR: usize = NANTS * (NANTS + 1) / 2;
 
@@ -76,6 +79,7 @@ impl StorageMgr {
 
             loop {
                 if sys.disks().iter().any(|d| {
+                    //println!("{:?}", d.name());
                     d.mount_point() == self.pool.first().unwrap() && {
                         let gbytes_to_write = (1.0
                             - now.num_seconds_from_midnight() as f64 / 86400_f64)
@@ -92,6 +96,7 @@ impl StorageMgr {
                 }) {
                     break;
                 } else {
+                    if File::create(self.pool.first().unwrap().join("done")).is_ok() {}
                     self.pool.rotate_left(1);
                 }
             }

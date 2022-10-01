@@ -148,10 +148,6 @@ fn main() {
                     //write data
                     let outdir = storage.get_out_dir(now);
 
-                    
-
-                    
-
                     let mut corr_prod_file = File::create("corr_prod.txt").unwrap();
                     for (i, p) in corr_prod.iter().enumerate() {
                         writeln!(&mut corr_prod_file, "{} {} {}", i, p.0, p.1).unwrap();
@@ -191,9 +187,9 @@ fn main() {
                     }
 
                     data_buf.iter_mut().for_each(|x| *x = Complex::default()); //reset all values to zero
-                } else if dropped && !dry_run{
+                } else if dropped && !dry_run {
                     println!("*****Data dropped, skip writting*****");
-                } else if dry_run{
+                } else if dry_run {
                     println!("dryrun, skip writting");
                 }
                 assert_eq!(frame_buf1.meta_data.gcnt % NCORR as u32, 0);
@@ -234,11 +230,9 @@ fn main() {
         }
     });
 
-    let _ = std::thread::spawn(||{
-        loop{
-            std::thread::sleep(std::time::Duration::from_secs(1));
-            eprintln!(".");
-        }
+    let _ = std::thread::spawn(|| loop {
+        std::thread::sleep(std::time::Duration::from_secs(1));
+        eprintln!(".");
     });
 
     while !*exit.read().unwrap() {
