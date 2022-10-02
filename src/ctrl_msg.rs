@@ -558,7 +558,7 @@ pub struct Stop {
 
 impl Command for Stop {
     fn cmd_type(&self) -> CmdType {
-        CmdType::ShutDownNow
+        CmdType::Stop
     }
 
     fn cmd_string(&self) -> String {
