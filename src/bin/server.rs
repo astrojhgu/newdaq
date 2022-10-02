@@ -1,8 +1,7 @@
-use packed_struct::{prelude::*, types::bits::ByteArray};
-
-use newdaq::ctrl_msg::CommandFrame;
-
 use clap::Parser;
+use newdaq::ctrl_msg::CommandFrame;
+use packed_struct::{prelude::*, types::bits::ByteArray};
+use std::net::UdpSocket;
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -11,8 +10,6 @@ struct Args {
     #[clap(short = 'a', long = "add", value_parser)]
     addr_with_port: String,
 }
-
-use std::net::UdpSocket;
 
 fn main() {
     let args = Args::parse();
