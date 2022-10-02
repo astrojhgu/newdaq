@@ -2,7 +2,7 @@ use clap::Parser;
 use newdaq::ctrl_msg::CommandFrame;
 use packed_struct::{prelude::*, types::bits::ByteArray};
 use std::net::UdpSocket;
-
+use chrono::offset::Local;
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 struct Args {
@@ -19,7 +19,9 @@ fn main() {
     loop {
         let mut buffer = vec![0_u8; 1024];
         let (s, remote_addr) = udp.recv_from(&mut buffer).unwrap();
-        println!("{} bytes received from {}", s, remote_addr);
+
+        let now=Local::now();
+        println!("{} bytes received from {} @ {:?}", s, remote_addr, now);
         let size = <CommandFrame as PackedStruct>::ByteArray::len();
         let cmd = CommandFrame::unpack_from_slice(&buffer[..size]).unwrap();
         let cmd = cmd.get_cmd();

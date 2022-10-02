@@ -23,11 +23,7 @@ fn main() {
 
     let addr = args.addr_with_port;
 
-    if UdpSocket::bind("0.0.0.0:8888").is_ok(){
-        println!("Error, no process listening to port 8888, stop sending to avoid crash the instrument");
-        println!("Exiting...");
-        std::process::exit(1);
-    }
+    
 
     let udp = UdpSocket::bind("0.0.0.0:8889").unwrap();
 
@@ -41,7 +37,16 @@ fn main() {
         let cmd = cmd.get_cmd();
         let cmd = CommandFrame::from_msg(&*cmd);
         let data = cmd.pack().unwrap();
-        udp.send_to(&data, &addr).unwrap();
+
+        if UdpSocket::bind("0.0.0.0:8888").is_ok(){
+            println!("Error, no process listening to port 8888, stop sending to avoid crash the instrument");
+            println!("Exiting...");
+            std::process::exit(1);
+        }else{
+            udp.send_to(&data, &addr).unwrap();
+        }
+
+        
         std::thread::sleep(std::time::Duration::from_millis(1000));
     }
 }

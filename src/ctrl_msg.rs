@@ -324,7 +324,7 @@ impl Command for HealthInfo {
 
     fn cmd_string(&self) -> String {
         format!(
-            "Temperature {} {}\n{} {}\n{} {}\n{} {}\n{} {}\n{}\n",
+            "Temperature \n{} {}\n{} {}\n{} {}\n{} {}\n{} {}\n{}\n",
             self.temperature[0],
             self.temperature[1],
             self.temperature[2],
