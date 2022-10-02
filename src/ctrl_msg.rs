@@ -506,7 +506,7 @@ impl Command for DataStatus {
 
     fn cmd_string(&self) -> String {
         format!(
-            "DataStatus: {} {} {} {} {}",
+            "DataStatus: {} {} {} {} {}\n",
             self.sta[0], self.sta[1], self.sta[2], self.sta[3], self.sta[4]
         )
     }

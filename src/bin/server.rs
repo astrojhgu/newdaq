@@ -21,10 +21,11 @@ fn main() {
         let (s, remote_addr) = udp.recv_from(&mut buffer).unwrap();
 
         let now=Local::now();
-        println!("{} bytes received from {} @ {:?}", s, remote_addr, now);
+        println!("{} bytes received from {} ", s, remote_addr);
         let size = <CommandFrame as PackedStruct>::ByteArray::len();
         let cmd = CommandFrame::unpack_from_slice(&buffer[..size]).unwrap();
         let cmd = cmd.get_cmd();
         println!("{}", cmd.cmd_string());
+        println!("{:?}", now);
     }
 }
