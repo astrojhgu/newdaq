@@ -1,0 +1,29 @@
+[dependencies]
+chrono = '0.4.22'
+crossbeam = '0.8.2'
+etherparse = '0.12.0'
+num-complex = '0.4.2'
+num-traits = '0.2.15'
+pcap = '0.10.1'
+rayon = '1.5.3'
+serde_yaml = '0.9.13'
+sysinfo = '0.26.2'
+ctrlc = "3.2.3"
+packed_struct = "0.10.0"
+
+[dependencies.clap]
+features = ['derive']
+version = '3.2.22'
+
+[dependencies.pnet]
+features = ['pcap']
+version = '0.31.0'
+
+[dependencies.serde]
+features = ['derive']
+version = '1.0.144'
+
+[package]
+edition = '2021'
+name = 'newdaq'
+version = '0.1.0'
