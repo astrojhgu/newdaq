@@ -23,7 +23,7 @@ fn main() {
 
     let addr = args.addr_with_port;
 
-    let udp = UdpSocket::bind("192.168.1.50:8888").unwrap();
+    let udp = UdpSocket::bind("0.0.0.0:8888").unwrap();
 
     let cfg = args.cfg;
 
