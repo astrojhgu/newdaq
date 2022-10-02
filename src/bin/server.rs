@@ -18,8 +18,8 @@ fn main() {
     let udp = UdpSocket::bind(addr).unwrap();
     loop {
         let mut buffer = vec![0_u8; 1024];
-        let s = udp.recv(&mut buffer).unwrap();
-        println!("{} bytes received", s);
+        let (s, remote_addr) = udp.recv_from(&mut buffer).unwrap();
+        println!("{} bytes received from {}", s, remote_addr);
         let size = <CommandFrame as PackedStruct>::ByteArray::len();
         let cmd = CommandFrame::unpack_from_slice(&buffer[..size]).unwrap();
         let cmd = cmd.get_cmd();

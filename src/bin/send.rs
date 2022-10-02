@@ -23,7 +23,13 @@ fn main() {
 
     let addr = args.addr_with_port;
 
-    let udp = UdpSocket::bind("0.0.0.0:8888").unwrap();
+    if UdpSocket::bind("0.0.0.0:8888").is_ok(){
+        println!("Error, no process listening to port 8888, stop sending to avoid crash the instrument");
+        println!("Exiting...");
+        std::process::exit(1);
+    }
+
+    let udp = UdpSocket::bind("0.0.0.0:8889").unwrap();
 
     let cfg = args.cfg;
 
