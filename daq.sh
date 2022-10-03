@@ -1,6 +1,6 @@
 #!/bin/bash
 cargo build --release || exit
-rm -f /dev/shm/*
+cat cfg.yaml >/dev/shm/cfg.yaml
 
 getcap ./target/release/save_data |grep cap_net_admin,cap_net_raw=eip || sudo setcap cap_net_raw,cap_net_admin=eip ./target/release/save_data
 dev1=enp101s0f0

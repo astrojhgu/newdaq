@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-cat cfg.yaml >/dev/shm/cfg.yaml
+cp -f cfg.yaml /dev/shm/
 
 tmux ls |grep daq && tmux kill-session -t daq
 tmux new -s daq -d
