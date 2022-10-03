@@ -170,6 +170,7 @@ pub trait Command {
     fn fill_data(&self, _: &mut [u8]) -> usize;
     #[allow(clippy::wrong_self_convention)]
     fn from_data(&mut self, _: &[u8]);
+    fn to_enum(&self)->CmdEnum;
 }
 /////////////////////////////////////////////////////////////////////
 #[derive(Clone, Copy, PackedStruct, PartialEq, Eq, Debug, Serialize, Deserialize, Default)]
@@ -197,6 +198,10 @@ impl Command for SingleBoard {
     fn from_data(&mut self, d: &[u8]) {
         let sz = <Self as PackedStruct>::ByteArray::len();
         *self = Self::unpack_from_slice(&d[..sz]).unwrap();
+    }
+
+    fn to_enum(&self)->CmdEnum {
+        CmdEnum::SingleBoard(*self)
     }
 }
 
@@ -230,6 +235,10 @@ impl Command for DoubleBoard {
         let sz = <Self as PackedStruct>::ByteArray::len();
         *self = Self::unpack_from_slice(&d[..sz]).unwrap();
     }
+
+    fn to_enum(&self)->CmdEnum {
+        CmdEnum::DoubleBoard(*self)
+    }
 }
 
 #[derive(Clone, Copy, PackedStruct, PartialEq, Eq, Debug, Serialize, Deserialize, Default)]
@@ -262,6 +271,10 @@ impl Command for FiveBoard {
     fn from_data(&mut self, d: &[u8]) {
         let sz = <Self as PackedStruct>::ByteArray::len();
         *self = Self::unpack_from_slice(&d[..sz]).unwrap();
+    }
+
+    fn to_enum(&self)->CmdEnum {
+        CmdEnum::FiveBoard(*self)
     }
 }
 
@@ -309,6 +322,10 @@ impl Command for SelfCheckStatus {
         let sz = <Self as PackedStruct>::ByteArray::len();
         *self = Self::unpack_from_slice(&d[..sz]).unwrap();
     }
+
+    fn to_enum(&self)->CmdEnum {
+        CmdEnum::SelfCheckStatus(*self)
+    }
 }
 
 #[derive(Clone, Copy, PackedStruct, PartialEq, Eq, Debug, Serialize, Deserialize, Default)]
@@ -348,6 +365,10 @@ impl Command for HealthInfo {
     fn from_data(&mut self, d: &[u8]) {
         let sz = <Self as PackedStruct>::ByteArray::len();
         *self = Self::unpack_from_slice(&d[..sz]).unwrap();
+    }
+
+    fn to_enum(&self)->CmdEnum {
+        CmdEnum::HealthInfo(*self)
     }
 }
 
@@ -410,6 +431,10 @@ impl Command for GB40 {
         let sz = <Self as PackedStruct>::ByteArray::len();
         *self = Self::unpack_from_slice(&d[..sz]).unwrap();
     }
+
+    fn to_enum(&self)->CmdEnum {
+        CmdEnum::GB40(*self)
+    }
 }
 
 #[derive(Clone, Copy, PackedStruct, PartialEq, Eq, Debug, Serialize, Deserialize, Default)]
@@ -436,6 +461,10 @@ impl Command for Trigger {
     fn from_data(&mut self, d: &[u8]) {
         let sz = <Self as PackedStruct>::ByteArray::len();
         *self = Self::unpack_from_slice(&d[..sz]).unwrap();
+    }
+
+    fn to_enum(&self)->CmdEnum {
+        CmdEnum::Trigger(*self)
     }
 }
 
@@ -464,6 +493,10 @@ impl Command for Reference {
         let sz = <Self as PackedStruct>::ByteArray::len();
         *self = Self::unpack_from_slice(&d[..sz]).unwrap();
     }
+
+    fn to_enum(&self)->CmdEnum {
+        CmdEnum::Reference(*self)
+    }
 }
 
 #[derive(Clone, Copy, PackedStruct, PartialEq, Eq, Debug, Serialize, Deserialize, Default)]
@@ -490,6 +523,10 @@ impl Command for WorkMode {
     fn from_data(&mut self, d: &[u8]) {
         let sz = <Self as PackedStruct>::ByteArray::len();
         *self = Self::unpack_from_slice(&d[..sz]).unwrap();
+    }
+
+    fn to_enum(&self)->CmdEnum {
+        CmdEnum::WorkMode(*self)
     }
 }
 
@@ -521,6 +558,10 @@ impl Command for DataStatus {
         let sz = <Self as PackedStruct>::ByteArray::len();
         *self = Self::unpack_from_slice(&d[..sz]).unwrap();
     }
+
+    fn to_enum(&self)->CmdEnum {
+        CmdEnum::DataStatus(*self)
+    }
 }
 
 #[derive(Clone, Copy, PackedStruct, PartialEq, Eq, Debug, Serialize, Deserialize, Default)]
@@ -548,6 +589,9 @@ impl Command for Shutdown {
         let sz = <Self as PackedStruct>::ByteArray::len();
         *self = Self::unpack_from_slice(&d[..sz]).unwrap();
     }
+    fn to_enum(&self)->CmdEnum {
+        CmdEnum::Shutdown(*self)
+    }
 }
 
 #[derive(Clone, Copy, PackedStruct, PartialEq, Eq, Debug, Serialize, Deserialize, Default)]
@@ -574,6 +618,10 @@ impl Command for Stop {
     fn from_data(&mut self, d: &[u8]) {
         let sz = <Self as PackedStruct>::ByteArray::len();
         *self = Self::unpack_from_slice(&d[..sz]).unwrap();
+    }
+
+    fn to_enum(&self)->CmdEnum {
+        CmdEnum::Stop(*self)
     }
 }
 

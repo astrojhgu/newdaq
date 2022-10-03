@@ -40,6 +40,7 @@ function format_dev() {
     yes | sudo mkfs.ext4 /dev/${dev}1
     sudo mkdir -p /mnt/${dev}
     sudo mount /dev/${dev}1 /mnt/${dev}
+    sudo chmod a+rwx /mnt/${dev}
 
     echo done
 }

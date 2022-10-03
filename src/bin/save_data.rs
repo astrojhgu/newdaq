@@ -148,7 +148,7 @@ fn main() {
                     //write data
                     let outdir = storage.get_out_dir(now);
 
-                    let mut corr_prod_file = File::create("corr_prod.txt").unwrap();
+                    let mut corr_prod_file = File::create("/dev/shm/corr_prod.txt").unwrap();
                     for (i, p) in corr_prod.iter().enumerate() {
                         writeln!(&mut corr_prod_file, "{} {} {}", i, p.0, p.1).unwrap();
                     }
