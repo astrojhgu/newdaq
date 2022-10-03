@@ -2,6 +2,7 @@ use clap::Parser;
 use newdaq::ctrl_msg::CommandFrame;
 use packed_struct::{prelude::*, types::bits::ByteArray};
 use std::net::UdpSocket;
+use std::io::Write;
 use chrono::offset::Local;
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -25,7 +26,11 @@ fn main() {
         let size = <CommandFrame as PackedStruct>::ByteArray::len();
         let cmd = CommandFrame::unpack_from_slice(&buffer[..size]).unwrap();
         let cmd = cmd.get_cmd();
+
+        let mut outfile=std::fs::File::create("dev_reply.log").unwrap();
         println!("{}", cmd.cmd_string());
         println!("{:?}", now);
+        writeln!(&mut outfile, "{}", cmd.cmd_string()).unwrap();
+        writeln!(&mut outfile, "{:?}", now).unwrap();
     }
 }
