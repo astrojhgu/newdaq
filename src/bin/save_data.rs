@@ -28,6 +28,9 @@ struct Args {
     #[clap(short = 'c', long = "cfg", value_parser)]
     cfg: String,
 
+    #[clap(short = 'n', long = "ndisk", value_parser)]
+    ndisk: Option<usize>,
+
     /// If dry run
     #[clap(short('d'), long("dry"), action)]
     dry_run: bool,
@@ -36,9 +39,17 @@ struct Args {
 fn main() {
     let args = Args::parse();
 
+    let ndisk=if let Some(n)=args.ndisk{
+        n
+    }else{
+        0
+    };
+
     let mut cfg_file = std::fs::File::open(args.cfg).unwrap();
 
-    let cfg: Cfg = from_reader(&mut cfg_file).unwrap();
+    let mut cfg: Cfg = from_reader(&mut cfg_file).unwrap();
+
+    cfg.out_dir.rotate_left(ndisk);
 
     let dry_run = args.dry_run;
 
