@@ -96,7 +96,8 @@ function inspect_disks() {
         slot=$(dev2slot ${dev})
         if df | grep $dev >/dev/null; then
             occ=$(df | grep ${dev} | awk '{printf("%s /  %s   %s", $3,$2,$5)}')
-            if [ -e /mnt/${dev}/time*txt ]; then
+            datestr=$(date +%Y%m%d)
+            if [ -e /mnt/${dev}/time-0-${datestr}.txt  ]; then
                 state=Writing
             else
                 state=Spare
