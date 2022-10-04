@@ -1,3 +1,4 @@
+use serde_json::to_writer;
 use serde_yaml::from_reader;
 
 use clap::Parser;
@@ -15,7 +16,9 @@ use chrono::offset::Local;
 
 use crossbeam::channel::bounded;
 
-use newdaq::{DataFrame, MetaData, StorageMgr, Cfg, NCH, NCH_PER_PKT, NCORR, NPORT_PER_BD, PKT_LEN};
+use newdaq::{
+    Cfg, DataFrame, MetaData, StorageMgr, TimeStamp, NCH, NCH_PER_PKT, NCORR, NPORT_PER_BD, PKT_LEN,
+};
 
 /// Simple program to greet a person
 #[derive(Parser, Debug)]
@@ -29,8 +32,6 @@ struct Args {
     #[clap(short('d'), long("dry"), action)]
     dry_run: bool,
 }
-
-
 
 fn main() {
     let args = Args::parse();
@@ -136,6 +137,14 @@ fn main() {
                 let mut outfile = File::create("/dev/shm/dump.bin").unwrap();
                 outfile.write_all(disk_data).unwrap();
 
+                let ts=TimeStamp{
+                    time: format!("{:?}", now)
+                };
+
+                
+                let mut outfile=File::create("/dev/shm/last_data_time.json").unwrap();
+                to_writer(&mut outfile, &ts).unwrap();
+
                 if !dropped && !dry_run {
                     //write data
                     let outdir = storage.get_out_dir(now);
@@ -178,6 +187,7 @@ fn main() {
                             .unwrap();
                     }
 
+                    
                     data_buf.iter_mut().for_each(|x| *x = Complex::default()); //reset all values to zero
                 } else if dropped && !dry_run {
                     println!("*****Data dropped, skip writting*****");

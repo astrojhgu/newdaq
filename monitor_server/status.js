@@ -23,11 +23,7 @@ fetch("/data/temperature.json").then((response) => response.json())
 });
 
 var timestamp;
-fetch("/data/last_msg_time.json").then((response) => response.json())
-.then((data) => {
-    timestamp=Date.parse(data["time"]);
-    //document.getElementById("timestamp").textContent="Updated:   "+timestamp;
-});
+
 
 fetch("/data/disk.json").then((response)=> response.json())
 .then((data)=>{
@@ -42,13 +38,29 @@ fetch("/data/disk.json").then((response)=> response.json())
 });
 
 var t=setInterval(function(){
-    dt=(Date.now()-timestamp)/1000.0;
-    textContent="上次更新时间:   "+dt+ " 秒之前";
+    fetch("/data/last_msg_time.json").then((response) => response.json())
+    .then((data) => {
+    timestamp=Date.parse(data["time"]);
+    let dt=(Date.now()-timestamp)/1000.0;
+    dt=Math.round(dt * 10) / 10
+    textContent="最近一次状态更新时间:   "+dt + " 秒之前";
     if (dt>45){
         textContent+="---警告：长时间未更新，检查仪器状态！";
         document.getElementById("timestamp").style.color="red";
     }
     document.getElementById("timestamp").textContent=textContent;
+    //document.getElementById("timestamp").textContent="Updated:   "+timestamp;
+    });   
 
 
+},1000);
+
+
+var t=setInterval(function(){
+    fetch("/data/last_data_time.json").then((response)=>response.json()).then((data)=>{
+        last_data_time=Date.parse(data['time']);
+        let dt=(Date.now()-timestamp)/1000.0;
+        dt=Math.round(dt * 10) / 10
+        document.getElementById("data_ts").textContent="最近一次数据到达时间： "+ dt + " 秒之前";
+    })
 },1000);

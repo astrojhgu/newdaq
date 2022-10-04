@@ -32,6 +32,12 @@ pub struct Cfg {
     pub stations: Vec<String>,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize, Default)]
+pub struct TimeStamp{
+    pub time: String
+}
+
+
 #[derive(Clone, Copy, Default)]
 #[repr(C)]
 pub struct MetaData {
