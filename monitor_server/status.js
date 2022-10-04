@@ -3,23 +3,22 @@ console.log("hello")
 fetch("/data/mode.json").then((response) => response.json())
 .then((data) => {
     if (data["mode"]==3){
-        document.getElementById("status").textContent="运行中"
+        document.getElementById("status").textContent="状态： 运行中"
     }else{
-        document.getElementById("status").textContent="停止"
+        document.getElementById("status").textContent="状态： 停止"
     }
 });
 
 fetch("/data/temperature.json").then((response) => response.json())
 .then((data) => {
     temperature=data["temperature"];
-    console.log(temperature);
-    temperature_html="<p>";
+    const temperature_list=document.getElementById("temperature_list");
     for(i=0;i<5;++i){
-        temperature_html+="板卡 "+i+" : ";
-        temperature_html+=temperature[i*2]+" "+temperature[i*2+1];
-        temperature_html+="</p>"
+        const node=document.createElement("li");
+        const textnode=document.createTextNode("板卡 "+i+" "+temperature[i*2]+" "+temperature[i*2+1]);
+        node.appendChild(textnode);
+        temperature_list.appendChild(node);
     }
-    document.getElementById("div_health").innerHTML=temperature_html;
 });
 
 var timestamp;
