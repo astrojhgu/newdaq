@@ -1,5 +1,3 @@
-use serde::{Deserialize, Serialize};
-
 use serde_yaml::from_reader;
 
 use clap::Parser;
@@ -17,7 +15,7 @@ use chrono::offset::Local;
 
 use crossbeam::channel::bounded;
 
-use newdaq::{DataFrame, MetaData, StorageMgr, NCH, NCH_PER_PKT, NCORR, NPORT_PER_BD, PKT_LEN};
+use newdaq::{DataFrame, MetaData, StorageMgr, Cfg, NCH, NCH_PER_PKT, NCORR, NPORT_PER_BD, PKT_LEN};
 
 /// Simple program to greet a person
 #[derive(Parser, Debug)]
@@ -32,13 +30,7 @@ struct Args {
     dry_run: bool,
 }
 
-#[derive(Clone, Deserialize, Serialize, Debug)]
-struct Cfg {
-    dev: String,
-    out_dir: Vec<std::path::PathBuf>,
-    gbytes_per_day: usize,
-    stations: Vec<String>,
-}
+
 
 fn main() {
     let args = Args::parse();

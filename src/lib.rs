@@ -1,6 +1,7 @@
 use chrono::{offset::Local, Date, DateTime, Timelike};
 use std::{default::Default, fs::File, path::PathBuf};
 use sysinfo::{DiskExt, System, SystemExt};
+use serde::{Serialize, Deserialize};
 
 use num_complex::Complex;
 
@@ -21,6 +22,14 @@ pub fn str2macarray(mac: &str) -> [u8; 6] {
         .zip(mac.split(':'))
         .for_each(|(x, y)| *x = u8::from_str_radix(y, 16).expect("not valid mac"));
     result
+}
+
+#[derive(Clone, Deserialize, Serialize, Debug)]
+pub struct Cfg {
+    pub dev: String,
+    pub out_dir: Vec<std::path::PathBuf>,
+    pub gbytes_per_day: usize,
+    pub stations: Vec<String>,
 }
 
 #[derive(Clone, Copy, Default)]

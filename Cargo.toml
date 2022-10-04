@@ -11,6 +11,9 @@ sysinfo = '0.26.2'
 ctrlc = "3.2.3"
 packed_struct = "0.10.0"
 serde_json='1.0.85'
+rocket = "0.4.10"
+plotters = "0.3.4"
+csv = "1.1.6"
 
 [dependencies.clap]
 features = ['derive']

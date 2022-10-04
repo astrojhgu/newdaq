@@ -30,5 +30,5 @@ tmux ls |grep monitor && tmux kill-session -t monitor
 tmux new -s monitor -d
 tmux split-window -t monitor -d
 tmux next-layout -t monitor
-tmux send-keys -t monitor.1 " while :; do sleep 10; ./status.py ;./plot.py; done" C-m
+tmux send-keys -t monitor.1 "cargo run --bin monitor --release" C-m
 tmux send-keys -t monitor.0 "cd monitor_server; python -m http.server" C-m

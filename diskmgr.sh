@@ -87,10 +87,45 @@ function eject_all() {
     done
 }
 
+function inspect_disks() {
+    devs=$(enumerate_dev)
+    last_dev=$(echo $devs | awk '{print $NF}')
+    echo "{" >/dev/shm/disk1.json
+    for dev in $devs; do
+        echo \"${dev}\": >>/dev/shm/disk1.json
+        slot=$(dev2slot ${dev})
+        if df | grep $dev >/dev/null; then
+            occ=$(df | grep ${dev} | awk '{printf("%s /  %s   %s", $3,$2,$5)}')
+            if [ -e /mnt/${dev}/time*txt ]; then
+                state=Writing
+            else
+                state=Spare
+            fi
+        else
+            state=Ejected
+            occ=""
+        fi
+        echo "{" >>/dev/shm/disk1.json
+        echo \"state\": \"$state\" , >>/dev/shm/disk1.json
+        echo \"occ\": \"$occ\" , >>/dev/shm/disk1.json
+        echo \"slot\": \"$slot\" >>/dev/shm/disk1.json
+        echo $dev $state $occ
+        echo "}" >>/dev/shm/disk1.json
+        if [ x$last_dev == x$dev ]; then
+            :
+        else
+            echo , >>/dev/shm/disk1.json
+        fi
+    done
+    echo "}" >>/dev/shm/disk1.json
+    mv -f /dev/shm/disk1.json /dev/shm/disk.json
+}
+
 while :; do
     date
     eject_all
     sleep 5
     format_all
+    inspect_disks
     sleep 30
 done

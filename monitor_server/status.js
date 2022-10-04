@@ -29,10 +29,22 @@ fetch("/data/last_msg_time.json").then((response) => response.json())
     //document.getElementById("timestamp").textContent="Updated:   "+timestamp;
 });
 
+fetch("/data/disk.json").then((response)=> response.json())
+.then((data)=>{
+    disk_list=document.getElementById("disk_list");
+    for (dev in data){
+        const node=document.createElement("li")
+        const textnode=document.createTextNode(data[dev]['slot']+" "+dev+" :  "+data[dev]['state']+" "+data[dev]['occ']);
+        node.appendChild(textnode)
+        disk_list.appendChild(node);
+        console.log(data[dev])
+    }
+});
+
 var t=setInterval(function(){
     dt=(Date.now()-timestamp)/1000.0;
     textContent="上次更新时间:   "+dt+ " 秒之前";
-    if (dt>15){
+    if (dt>45){
         textContent+="---警告：长时间未更新，检查仪器状态！";
         document.getElementById("timestamp").style.color="red";
     }
