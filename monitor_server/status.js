@@ -1,82 +1,145 @@
 console.log("hello")
 
-fetch("/data/mode.json").then((response) => response.json())
-.then((data) => {
-    if (data["mode"]==3){
-        document.getElementById("status").textContent="状态： 运行中"
-    }else{
-        document.getElementById("status").textContent="状态： 停止"
-    }
-});
-
-fetch("/data/temperature.json").then((response) => response.json())
-.then((data) => {
-    temperature=data["temperature"];
-    const temperature_list=document.getElementById("temperature_list");
-    for(i=0;i<5;++i){
-        const node=document.createElement("li");
-        const textnode=document.createTextNode("板卡 "+i+" "+temperature[i*2]+" "+temperature[i*2+1]);
-        node.appendChild(textnode);
-        temperature_list.appendChild(node);
-    }
-});
-
-var timestamp;
-
-function translate(s){
-    if (s=='Writing'){
+function translate(s) {
+    if (s == 'Writing') {
         return "正在写入"
-    }else if (s=='Spare'){
+    } else if (s == 'Spare') {
         return "--空盘--";
-    }else if (s=='Ejected'){
+    } else if (s == 'Ejected') {
         return "未被挂载";
     }
-    else{
+    else {
         return s;
     }
 }
 
+//var timestamp;
 
-fetch("/data/disk.json").then((response)=> response.json())
-.then((data)=>{
-    disk_list=document.getElementById("disk_list");
-    for (dev in data){
-        const node=document.createElement("li")
-        const textnode=document.createTextNode(data[dev]['slot']+" "+dev+" :  "+translate(data[dev]['state'])+" "+data[dev]['occ']);
-        node.appendChild(textnode)
-        disk_list.appendChild(node);
-        console.log(data[dev])
-    }
-});
 
-var t=setInterval(function(){
+var t = setInterval(function () {
+    console.log("State updated");
     fetch("/data/last_msg_time.json").then((response) => response.json())
-    .then((data) => {
-    timestamp=Date.parse(data["time"]);
-    let dt=(Date.now()-timestamp)/1000.0;
-    dt=Math.round(dt * 10) / 10
-    textContent="最近一次状态更新时间:   "+dt + " 秒之前";
-    if (dt>45){
-        textContent+="---警告：长时间未更新，检查仪器状态！";
-        document.getElementById("timestamp").style.color="red";
-    }
-    document.getElementById("timestamp").textContent=textContent;
-    //document.getElementById("timestamp").textContent="Updated:   "+timestamp;
-    });   
+        .then((data) => {
+            timestamp = Date.parse(data["time"]);
+            let dt = (Date.now() - timestamp) / 1000.0;
+            dt = Math.round(dt * 10) / 10
+            textContent = "最近一次状态更新时间:   " + dt + " 秒之前";
+            if (dt > 45) {
+                textContent += "---警告：长时间未更新，检查仪器状态！";
+                document.getElementById("timestamp").style.color = "red";
+            }
+            document.getElementById("timestamp").textContent = textContent;
+            //document.getElementById("timestamp").textContent="Updated:   "+timestamp;
+        });
 
-
-},1000);
-
-
-var t=setInterval(function(){
-    fetch("/data/last_data_time.json").then((response)=>response.json()).then((data)=>{
-        last_data_time=Date.parse(data['time']);
-        let dt=(Date.now()-last_data_time)/1000.0;
-        dt=Math.round((dt-3) * 10) / 10 ;
-        document.getElementById("data_ts").textContent="最近一次数据到达时间： "+ dt + " 秒之前";
+    fetch("/data/last_data_time.json").then((response) => response.json()).then((data) => {
+        last_data_time = Date.parse(data['time']);
+        let dt = (Date.now() - last_data_time) / 1000.0;
+        dt = Math.round((dt - 3) * 10) / 10;
+        document.getElementById("data_ts").textContent = "最近一次数据到达时间： " + dt + " 秒之前";
     })
-},1000);
 
-setInterval(function(){
-    document.getElementById("div_current_time").innerHTML=new Date();
+    fetch("/data/temperature.json").then((response) => response.json())
+        .then((data) => {
+            temperature = data["temperature"];
+            const temperature_list = document.getElementById("temperature_list");
+            temperature_list.innerHTML = "";
+            temperature_list.children = [];
+            for (i = 0; i < 5; ++i) {
+                const node = document.createElement("li");
+                const textnode = document.createTextNode("板卡 " + i + " " + temperature[i * 2] + " " + temperature[i * 2 + 1]);
+                node.appendChild(textnode);
+                temperature_list.appendChild(node);
+            }
+        });
+
+    fetch("/data/mode.json").then((response) => response.json())
+        .then((data) => {
+            if (data["mode"] == 3) {
+                document.getElementById("status").textContent = "状态： 运行中"
+            } else {
+                document.getElementById("status").textContent = "状态： 停止"
+            }
+        });
+
+    fetch("/data/disk.json").then((response) => response.json())
+        .then((data) => {
+            disk_list = document.getElementById("disk_list");
+            disk_list.innerHTML = "";
+            for (dev in data) {
+                const node = document.createElement("li")
+                const textnode = document.createTextNode(data[dev]['slot'] + " " + dev + " :  " + translate(data[dev]['state']) + " " + data[dev]['occ']);
+                node.appendChild(textnode)
+                disk_list.appendChild(node);
+                //console.log(data[dev])
+            }
+        });
+        document.getElementById("div_current_time").innerHTML = new Date();
 }, 1000);
+
+const ants = [
+    "E01", "E02", "E03", "E04", "E05",
+    "E06", "E07", "E08", "E09", "E10",
+    "E11", "E12", "E13", "E14", "E15",
+    "E16", "E17", "E18", "E19", "E20",
+    "W01", "W02", "W03", "W04", "W05",
+    "W06", "W07", "W08", "W09", "W10",
+    "W11", "W12", "W13", "W14", "W15",
+    "W16", "W17", "W18", "W19", "W20"];
+
+for (let i = 0; i < 8; ++i) {
+    let p = document.createElement("p");
+    for (let j = 0; j < 5; ++j) {
+        const n = i * 5 + j;
+        let img = document.createElement("img");
+        let ant = ants[n];
+        img.src = "/data/imgs/" + ant + ant + "_ampl.png";
+        img.width = 200;
+        img.id = "spec_" + ant;
+        p.appendChild(img);
+    }
+    document.getElementById("div_spec").appendChild(p);
+    document.getElementById("div_spec").append(document.createElement("hr"));
+}
+
+for (let i = 0; i < 8; ++i) {
+    let p = document.createElement("p");
+    for (let j = 0; j < 5; ++j) {
+        const n = i * 5 + j;
+        let img = document.createElement("img");
+        let ant = ants[n];
+        img.src = "/data/imgs/" + "E01" + ant + "_ampl.png";
+        img.width = 200;
+        img.id = "corr_E01" + ant + "_ampl";
+        p.appendChild(img);
+    }
+    document.getElementById("div_corr").appendChild(p);
+    let p1 = document.createElement("p");
+    for (let j = 0; j < 5; ++j) {
+        const n = i * 5 + j;
+        let img = document.createElement("img");
+        let ant = ants[n];
+        img.src = "/data/imgs/" + "E01" + ant + "_phase.png";
+        img.width = 200;
+        img.id = "corr_E01" + ant + "_phase";
+        p1.appendChild(img);
+    }
+    document.getElementById("div_corr").appendChild(p1);
+
+    document.getElementById("div_corr").append(document.createElement("hr"));
+}
+
+function update_imgs() {
+    console.log("Images updated");
+    document.getElementById("all_phase").src = "/data/imgs/spec_all_phase.png?time=" + new Date();
+    document.getElementById("all_ampl").src = "/data/imgs/spec_all_ampl.png?time=" + new Date();
+    document.getElementById("all_power").src = "/data/imgs/power.png?time=" + new Date();
+
+    for (let ant of ants) {
+        document.getElementById("spec_" + ant).src = "/data/imgs/" + ant + ant + "_ampl.png?time=" + new Date();
+        document.getElementById("corr_E01" + ant + "_ampl").src = "/data/imgs/" + "E01" + ant + "_ampl.png?time=" + new Date();
+        document.getElementById("corr_E01" + ant + "_phase").src = "/data/imgs/" + "E01" + ant + "_phase.png?time=" + new Date();
+    }
+}
+
+setInterval(update_imgs, 10000);

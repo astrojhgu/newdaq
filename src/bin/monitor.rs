@@ -226,7 +226,7 @@ fn plot_spec_all(
 
         chart
             .draw_series(LineSeries::new(
-                freq.iter().cloned().zip(data.iter().cloned()),
+                freq.iter().cloned().zip(data.iter().cloned()).skip(NCH/4+100).take(NCH*3/4-200),
                 &BLUE,
             ))
             .unwrap();
@@ -243,10 +243,12 @@ fn power_all(
     _station_ant_map: &BTreeMap<String, usize>,
     _freq: &[f32],
 ) {
+    let now = Local::now();
+    let caption = format!("Power {}", now.format("%m%d-%T"));
     let root = BitMapBackend::new("/dev/shm/imgs/power.png", (800, 600)).into_drawing_area();
     root.fill(&WHITE).unwrap();
     let mut chart = ChartBuilder::on(&root)
-        .caption("Total power within bandpass", ("sans-serif", 20))
+        .caption(&caption, ("sans-serif", 20))
         .margin(5)
         .top_x_label_area_size(40)
         .y_label_area_size(40)
