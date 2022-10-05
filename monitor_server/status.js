@@ -23,13 +23,26 @@ fetch("/data/temperature.json").then((response) => response.json())
 
 var timestamp;
 
+function translate(s){
+    if (s=='Writing'){
+        return "正在写入"
+    }else if (s=='Spare'){
+        return "--空盘--";
+    }else if (s=='Ejected'){
+        return "未被挂载";
+    }
+    else{
+        return s;
+    }
+}
+
 
 fetch("/data/disk.json").then((response)=> response.json())
 .then((data)=>{
     disk_list=document.getElementById("disk_list");
     for (dev in data){
         const node=document.createElement("li")
-        const textnode=document.createTextNode(data[dev]['slot']+" "+dev+" :  "+data[dev]['state']+" "+data[dev]['occ']);
+        const textnode=document.createTextNode(data[dev]['slot']+" "+dev+" :  "+translate(data[dev]['state'])+" "+data[dev]['occ']);
         node.appendChild(textnode)
         disk_list.appendChild(node);
         console.log(data[dev])
@@ -58,8 +71,8 @@ var t=setInterval(function(){
 var t=setInterval(function(){
     fetch("/data/last_data_time.json").then((response)=>response.json()).then((data)=>{
         last_data_time=Date.parse(data['time']);
-        let dt=(Date.now()-timestamp)/1000.0;
-        dt=Math.round(dt * 10) / 10
+        let dt=(Date.now()-last_data_time)/1000.0;
+        dt=Math.round((dt-3) * 10) / 10 ;
         document.getElementById("data_ts").textContent="最近一次数据到达时间： "+ dt + " 秒之前";
     })
 },1000);

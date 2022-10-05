@@ -170,7 +170,7 @@ pub trait Command {
     fn fill_data(&self, _: &mut [u8]) -> usize;
     #[allow(clippy::wrong_self_convention)]
     fn from_data(&mut self, _: &[u8]);
-    fn to_enum(&self)->CmdEnum;
+    fn to_enum(&self) -> CmdEnum;
 }
 /////////////////////////////////////////////////////////////////////
 #[derive(Clone, Copy, PackedStruct, PartialEq, Eq, Debug, Serialize, Deserialize, Default)]
@@ -200,7 +200,7 @@ impl Command for SingleBoard {
         *self = Self::unpack_from_slice(&d[..sz]).unwrap();
     }
 
-    fn to_enum(&self)->CmdEnum {
+    fn to_enum(&self) -> CmdEnum {
         CmdEnum::SingleBoard(*self)
     }
 }
@@ -236,7 +236,7 @@ impl Command for DoubleBoard {
         *self = Self::unpack_from_slice(&d[..sz]).unwrap();
     }
 
-    fn to_enum(&self)->CmdEnum {
+    fn to_enum(&self) -> CmdEnum {
         CmdEnum::DoubleBoard(*self)
     }
 }
@@ -273,7 +273,7 @@ impl Command for FiveBoard {
         *self = Self::unpack_from_slice(&d[..sz]).unwrap();
     }
 
-    fn to_enum(&self)->CmdEnum {
+    fn to_enum(&self) -> CmdEnum {
         CmdEnum::FiveBoard(*self)
     }
 }
@@ -323,7 +323,7 @@ impl Command for SelfCheckStatus {
         *self = Self::unpack_from_slice(&d[..sz]).unwrap();
     }
 
-    fn to_enum(&self)->CmdEnum {
+    fn to_enum(&self) -> CmdEnum {
         CmdEnum::SelfCheckStatus(*self)
     }
 }
@@ -367,7 +367,7 @@ impl Command for HealthInfo {
         *self = Self::unpack_from_slice(&d[..sz]).unwrap();
     }
 
-    fn to_enum(&self)->CmdEnum {
+    fn to_enum(&self) -> CmdEnum {
         CmdEnum::HealthInfo(*self)
     }
 }
@@ -432,7 +432,7 @@ impl Command for GB40 {
         *self = Self::unpack_from_slice(&d[..sz]).unwrap();
     }
 
-    fn to_enum(&self)->CmdEnum {
+    fn to_enum(&self) -> CmdEnum {
         CmdEnum::GB40(*self)
     }
 }
@@ -463,7 +463,7 @@ impl Command for Trigger {
         *self = Self::unpack_from_slice(&d[..sz]).unwrap();
     }
 
-    fn to_enum(&self)->CmdEnum {
+    fn to_enum(&self) -> CmdEnum {
         CmdEnum::Trigger(*self)
     }
 }
@@ -494,7 +494,7 @@ impl Command for Reference {
         *self = Self::unpack_from_slice(&d[..sz]).unwrap();
     }
 
-    fn to_enum(&self)->CmdEnum {
+    fn to_enum(&self) -> CmdEnum {
         CmdEnum::Reference(*self)
     }
 }
@@ -525,7 +525,7 @@ impl Command for WorkMode {
         *self = Self::unpack_from_slice(&d[..sz]).unwrap();
     }
 
-    fn to_enum(&self)->CmdEnum {
+    fn to_enum(&self) -> CmdEnum {
         CmdEnum::WorkMode(*self)
     }
 }
@@ -559,7 +559,7 @@ impl Command for DataStatus {
         *self = Self::unpack_from_slice(&d[..sz]).unwrap();
     }
 
-    fn to_enum(&self)->CmdEnum {
+    fn to_enum(&self) -> CmdEnum {
         CmdEnum::DataStatus(*self)
     }
 }
@@ -589,7 +589,7 @@ impl Command for Shutdown {
         let sz = <Self as PackedStruct>::ByteArray::len();
         *self = Self::unpack_from_slice(&d[..sz]).unwrap();
     }
-    fn to_enum(&self)->CmdEnum {
+    fn to_enum(&self) -> CmdEnum {
         CmdEnum::Shutdown(*self)
     }
 }
@@ -620,7 +620,7 @@ impl Command for Stop {
         *self = Self::unpack_from_slice(&d[..sz]).unwrap();
     }
 
-    fn to_enum(&self)->CmdEnum {
+    fn to_enum(&self) -> CmdEnum {
         CmdEnum::Stop(*self)
     }
 }
