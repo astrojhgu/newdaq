@@ -74,7 +74,7 @@ var t = setInterval(function () {
                 //console.log(data[dev])
             }
         });
-        document.getElementById("div_current_time").innerHTML = new Date();
+    document.getElementById("div_current_time").innerHTML = new Date();
 }, 1000);
 
 const ants = [
