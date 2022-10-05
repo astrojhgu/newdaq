@@ -47,7 +47,7 @@ var t = setInterval(function () {
             temperature_list.children = [];
             for (i = 0; i < 5; ++i) {
                 const node = document.createElement("li");
-                const textnode = document.createTextNode("板卡 " + i + " " + temperature[i * 2] + " " + temperature[i * 2 + 1]);
+                const textnode = document.createTextNode("板卡 " + i + ": " + temperature[i * 2] + " 度 " + temperature[i * 2 + 1] + " 度");
                 node.appendChild(textnode);
                 temperature_list.appendChild(node);
             }
@@ -58,7 +58,7 @@ var t = setInterval(function () {
             if (data["mode"] == 3) {
                 document.getElementById("status").textContent = "状态： 运行中"
                 document.getElementById("status").style.color = "lightgreen";
-                document.getElementById("div_status").style.backgroundColor = "blue";
+                //document.getElementById("div_status").style.backgroundColor = "blue";
             } else {
                 document.getElementById("status").textContent = "状态： 停止"
                 document.getElementById("status").style.color = "yellow";
@@ -75,6 +75,16 @@ var t = setInterval(function () {
                 const node = document.createElement("li")
                 const textnode = document.createTextNode(data[dev]['slot'] + " " + dev + " :  " + translate(data[dev]['state']) + " " + data[dev]['occ']);
                 node.appendChild(textnode)
+                if (data[dev]['state'] == "Writing") {
+                    node.style.backgroundColor = "green";
+                    node.style.color = "white";
+                } else if (data[dev]['state'] == "Ejected") {
+                    node.style.backgroundColor = "gray";
+                    node.style.color = "red";
+                } else if (data[dev]['state'] == "Spare") {
+                    node.style.backgroundColor = "yellow";
+                    node.style.color = "green";
+                }
                 disk_list.appendChild(node);
                 //console.log(data[dev])
             }
