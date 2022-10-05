@@ -58,7 +58,7 @@ var t = setInterval(function () {
             if (data["mode"] == 3) {
                 document.getElementById("status").textContent = "状态： 运行中"
                 document.getElementById("status").style.color = "lightgreen";
-                //document.getElementById("div_status").style.backgroundColor = "blue";
+                document.getElementById("div_status").style.backgroundColor = "darkblue";
             } else {
                 document.getElementById("status").textContent = "状态： 停止"
                 document.getElementById("status").style.color = "yellow";
