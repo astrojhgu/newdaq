@@ -9,7 +9,8 @@ fn main() {
         CmdEnum::WorkMode(ctrl_msg::WorkMode::default()),
         CmdEnum::FiveBoard(ctrl_msg::FiveBoard::new(3000)),
         CmdEnum::DataStatus(ctrl_msg::DataStatus::default()),
-        CmdEnum::Stop(ctrl_msg::Stop::default())
+        CmdEnum::Stop(ctrl_msg::Stop::default()),
+        CmdEnum::Shutdown(ctrl_msg::Shutdown::default()),
     ];
 
     let mut f = std::fs::File::create("sample.yaml").unwrap();

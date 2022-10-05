@@ -63,3 +63,7 @@ var t=setInterval(function(){
         document.getElementById("data_ts").textContent="最近一次数据到达时间： "+ dt + " 秒之前";
     })
 },1000);
+
+setInterval(function(){
+    document.getElementById("div_current_time").innerHTML=new Date();
+}, 1000);

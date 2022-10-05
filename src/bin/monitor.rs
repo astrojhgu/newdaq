@@ -54,7 +54,9 @@ fn read_payload(fname: &str) -> Vec<Complex32> {
 }
 
 fn read_corr_prod(fname: &str) -> Vec<CpRecord> {
-    let mut rdr = csv::ReaderBuilder::new()
+    
+    loop {
+        let mut rdr = csv::ReaderBuilder::new()
         .has_headers(false)
         .delimiter(b' ')
         .from_reader(loop {
@@ -62,7 +64,6 @@ fn read_corr_prod(fname: &str) -> Vec<CpRecord> {
                 break f;
             }
         });
-    loop {
         let result = rdr
             .deserialize()
             .filter(|x| x.is_ok())
@@ -70,6 +71,9 @@ fn read_corr_prod(fname: &str) -> Vec<CpRecord> {
             .collect::<Vec<_>>();
         if result.len() == NCORR {
             break result;
+        }else{
+            println!("corr prod not ready");
+            std::thread::sleep(std::time::Duration::from_millis(100));
         }
     }
 }
@@ -92,8 +96,10 @@ fn plot_spec(a1: &str, a2: &str, payload: &[Complex32], corr_prod_map: &BTreeMap
     let out_img_name = img_out_dir.join(fname.clone()+"_ampl.png");
     let root = BitMapBackend::new(&out_img_name, (640, 480)).into_drawing_area();
     root.fill(&WHITE).unwrap();
+    let now=Local::now();
+    let caption=format!("{}-{}", fname, now.format("%m%d%T"));
     let mut chart = ChartBuilder::on(&root)
-        .caption(&fname, ("sans-serif", 50).into_font())
+        .caption(&caption, ("sans-serif", 50).into_font())
         .margin(5)
         .x_label_area_size(30)
         .y_label_area_size(30)

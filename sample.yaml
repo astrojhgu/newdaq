@@ -78,3 +78,5 @@
   - 0
 - !Stop
   _x: 0
+- !Shutdown
+  _x: 0
