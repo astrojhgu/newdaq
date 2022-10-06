@@ -1,11 +1,4 @@
-use std::path::PathBuf;
-
-use chrono::Local;
-use newdaq::StorageMgr;
 fn main() {
-    let pool: Vec<_> = vec!["/mnt/data3"].into_iter().map(PathBuf::from).collect();
-    let mut storage = StorageMgr::new(pool, 1200);
-    let now = Local::now();
-    println!("{:?}", storage.get_out_dir(now));
-    println!("{:?}", storage.get_out_dir(now));
+    let _f = std::fs::File::create("/mnt/sdb/a.dat").unwrap();
+    std::thread::sleep(std::time::Duration::from_secs(10));
 }

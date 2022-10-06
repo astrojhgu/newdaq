@@ -24,10 +24,14 @@ var t = setInterval(function () {
             let dt = (Date.now() - timestamp) / 1000.0;
             dt = Math.round(dt * 10) / 10
             textContent = "最近一次状态更新时间:   " + dt + " 秒之前";
+
             if (dt > 45) {
                 textContent += "---警告：长时间未更新，检查仪器状态！";
-                document.getElementById("timestamp").style.color = "red";
+                document.getElementById("timestamp").style.backgroundColor = "red";
+            } else {
+                document.getElementById("timestamp").style.backgroundColor = "green";
             }
+
             document.getElementById("timestamp").textContent = textContent;
             //document.getElementById("timestamp").textContent="Updated:   "+timestamp;
         });
@@ -36,7 +40,14 @@ var t = setInterval(function () {
         last_data_time = Date.parse(data['time']);
         let dt = (Date.now() - last_data_time) / 1000.0;
         dt = Math.round((dt - 3) * 10) / 10;
-        document.getElementById("data_ts").textContent = "最近一次数据到达时间： " + dt + " 秒之前";
+        textContent = "最近一次数据到达时间： " + dt + " 秒之前";
+        if (dt > 10) {
+            textContent += "---警告：长时间未更新，检查仪器状态！";
+            document.getElementById("data_ts").style.backgroundColor = "red";
+        } else {
+            document.getElementById("data_ts").style.backgroundColor="green";
+        }
+        document.getElementById("data_ts").textContent=textContent;
     })
 
     fetch("/data/temperature.json").then((response) => response.json())
@@ -57,12 +68,12 @@ var t = setInterval(function () {
         .then((data) => {
             if (data["mode"] == 3) {
                 document.getElementById("status").textContent = "状态： 运行中"
-                document.getElementById("status").style.color = "lightgreen";
-                document.getElementById("div_status").style.backgroundColor = "darkblue";
+                document.getElementById("status").style.backgroundColor = "green";
+                //document.getElementById("div_status").style.backgroundColor = "darkblue";
             } else {
                 document.getElementById("status").textContent = "状态： 停止"
-                document.getElementById("status").style.color = "yellow";
-                document.getElementById("div_status").style.backgroundColor = "red";
+                document.getElementById("status").style.backgroundColor = "red";
+                //document.getElementById("div_status").style.backgroundColor = "red";
 
             }
         });
@@ -73,7 +84,7 @@ var t = setInterval(function () {
             disk_list.innerHTML = "";
             for (dev in data) {
                 const node = document.createElement("li")
-                const textnode = document.createTextNode(data[dev]['slot'] + " " + dev + " :  " + translate(data[dev]['state']) + " " + data[dev]['occ']);
+                const textnode = document.createTextNode(data[dev]['slot'].split("/")[2] + " " + dev + " :  " + translate(data[dev]['state']) + " " + data[dev]['occ']);
                 node.appendChild(textnode)
                 if (data[dev]['state'] == "Writing") {
                     node.style.backgroundColor = "green";

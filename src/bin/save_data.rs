@@ -9,7 +9,7 @@ use std::{
     fs::File,
     io::Write,
     path::PathBuf,
-    sync::{Arc, RwLock},
+    sync::{Arc, Mutex},
 };
 
 use chrono::offset::Local;
@@ -39,11 +39,7 @@ struct Args {
 fn main() {
     let args = Args::parse();
 
-    let ndisk=if let Some(n)=args.ndisk{
-        n
-    }else{
-        0
-    };
+    let ndisk = if let Some(n) = args.ndisk { n } else { 0 };
 
     let mut cfg_file = std::fs::File::open(args.cfg).unwrap();
 
@@ -95,17 +91,18 @@ fn main() {
     let (sender, receiver) = bounded(16384);
 
     //let exit=Arc::new(Mutex::new(false));
-    let exit = Arc::new(RwLock::new(false));
+    let writing_lock = Arc::new(Mutex::new(0));
 
-    let exit1 = Arc::clone(&exit);
+    let writing_lock1 = Arc::clone(&writing_lock);
 
     ctrlc::set_handler(move || {
         eprintln!("Waiting for data writing finishing");
-        *exit1.write().unwrap() = true;
+        let _guard = writing_lock1.lock().unwrap();
+        std::process::exit(1);
     })
     .unwrap();
 
-    let exit1 = Arc::clone(&exit);
+    let writing_lock1 = Arc::clone(&writing_lock);
     let _ = std::thread::spawn(move || {
         let mut last_meta_data = MetaData::default();
         let mut corr_prod = vec![(0, 0); NCORR];
@@ -114,18 +111,7 @@ fn main() {
         loop {
             max_nmsg = max_nmsg.max(receiver.len());
 
-            let ex = *exit1.read().unwrap();
-            if ex {
-                println!("exit from point 1");
-                break;
-            }
-
             let frame_buf1: DataFrame = receiver.recv().unwrap();
-
-            if ex {
-                println!("exit from point 2");
-                break;
-            }
 
             if last_meta_data.gcnt + 1 != frame_buf1.meta_data.gcnt {
                 dropped = true;
@@ -148,18 +134,18 @@ fn main() {
                 let mut outfile = File::create("/dev/shm/dump.bin").unwrap();
                 outfile.write_all(disk_data).unwrap();
 
-                let ts=TimeStamp{
-                    time: format!("{:?}", now)
+                let ts = TimeStamp {
+                    time: format!("{:?}", now),
                 };
 
-                
-                let mut outfile=File::create("/dev/shm/last_data_time.json").unwrap();
+                let mut outfile = File::create("/dev/shm/last_data_time.json").unwrap();
                 to_writer(&mut outfile, &ts).unwrap();
 
                 if !dropped && !dry_run {
                     //write data
-                    let outdir = storage.get_out_dir(now);
 
+                    let outdir = storage.get_out_dir(now);
+                    let _guard = writing_lock1.lock().unwrap();
                     let mut corr_prod_file = File::create("/dev/shm/corr_prod.txt").unwrap();
                     for (i, p) in corr_prod.iter().enumerate() {
                         writeln!(&mut corr_prod_file, "{} {} {}", i, p.0, p.1).unwrap();
@@ -198,7 +184,6 @@ fn main() {
                             .unwrap();
                     }
 
-                    
                     data_buf.iter_mut().for_each(|x| *x = Complex::default()); //reset all values to zero
                 } else if dropped && !dry_run {
                     println!("*****Data dropped, skip writting*****");
@@ -248,7 +233,7 @@ fn main() {
         eprintln!(".");
     });
 
-    while !*exit.read().unwrap() {
+    loop {
         match cap.next_packet() {
             Ok(pkt) if pkt.data.len() == PKT_LEN => {
                 let mut frame_buf1 = DataFrame::default();

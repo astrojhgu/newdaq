@@ -1,7 +1,8 @@
 use chrono::{offset::Local, Date, DateTime, Timelike};
+use lockfile::Lockfile;
+use serde::{Deserialize, Serialize};
 use std::{default::Default, fs::File, path::PathBuf};
 use sysinfo::{DiskExt, System, SystemExt};
-use serde::{Serialize, Deserialize};
 
 use num_complex::Complex;
 
@@ -33,10 +34,9 @@ pub struct Cfg {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, Default)]
-pub struct TimeStamp{
-    pub time: String
+pub struct TimeStamp {
+    pub time: String,
 }
-
 
 #[derive(Clone, Copy, Default)]
 #[repr(C)]
@@ -71,6 +71,7 @@ pub struct StorageMgr {
     pub pool: Vec<PathBuf>,
     pub today: Date<Local>,
     pub gbytes_per_day: usize,
+    pub lock: Option<Lockfile>,
 }
 
 impl StorageMgr {
@@ -80,6 +81,7 @@ impl StorageMgr {
             pool,
             today,
             gbytes_per_day,
+            lock: None,
         }
     }
 
@@ -89,10 +91,9 @@ impl StorageMgr {
             println!("Yesterday is {}, today is {}", self.today, today);
             self.today = today;
 
-            let mut sys = System::new_all();
-            sys.refresh_all();
-
             loop {
+                let mut sys = System::new_all();
+                sys.refresh_all();
                 if sys.disks().iter().any(|d| {
                     //println!("{:?}", d.name());
                     d.mount_point() == self.pool.first().unwrap() && {
@@ -106,14 +107,29 @@ impl StorageMgr {
                             gbytes_to_write,
                             gbytes_available
                         );
-                        gbytes_available as f64 > gbytes_to_write
+                        if gbytes_available as f64 > gbytes_to_write {
+                            if std::fs::remove_file(self.pool.first().unwrap().join("running"))
+                                .is_ok()
+                            {
+                                println!("removed lock file");
+                            }
+                            self.lock = Some(
+                                Lockfile::create(self.pool.first().unwrap().join("running"))
+                                    .unwrap(),
+                            );
+                            true
+                        } else {
+                            if File::create(self.pool.first().unwrap().join("done")).is_ok() {}
+                            false
+                        }
                     }
                 }) {
                     break;
                 } else {
-                    if File::create(self.pool.first().unwrap().join("done")).is_ok() {}
                     self.pool.rotate_left(1);
                 }
+                println!("checking next candidate disk");
+                std::thread::sleep(std::time::Duration::from_millis(1000));
             }
         }
         self.pool.first().unwrap().to_owned()

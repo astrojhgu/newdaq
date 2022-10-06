@@ -65,8 +65,9 @@ fn read_corr_prod(fname: &str) -> Vec<CpRecord> {
             });
         let result = rdr
             .deserialize()
-            .filter(|x| x.is_ok())
-            .map(|x: Result<CpRecord, _>| x.unwrap())
+            .filter_map(|x| x.ok())
+            //.filter(|x| x.is_ok())
+            //.map(|x: Result<CpRecord, _>| x.unwrap())
             .collect::<Vec<_>>();
         if result.len() == NCORR {
             break result;
@@ -120,7 +121,7 @@ fn plot_spec(
     chart
         .draw_series(LineSeries::new(
             freq.iter().cloned().zip(spec.iter().cloned()),
-            &RED,
+            RED,
         ))
         .unwrap();
     root.present().unwrap();
@@ -141,7 +142,7 @@ fn plot_spec(
     chart
         .draw_series(LineSeries::new(
             freq.iter().cloned().zip(phase.iter().cloned()),
-            &BLUE,
+            BLUE,
         ))
         .unwrap();
     root.present().unwrap();
@@ -161,31 +162,31 @@ fn plot_spec_all(
     //println!("{:?}", spec);
     let now = Local::now();
     let img_out_dir = PathBuf::from(IMG_DIR_STR);
-    
+
     let out_img_name = img_out_dir.join(fname.clone() + "_ampl.png");
     let title = format!("ampl-{}", now.format("%m%d-%T"));
     let root_ampl = BitMapBackend::new(&out_img_name, (2000, 2000)).into_drawing_area();
     root_ampl.fill(&WHITE).unwrap();
-    
-    let root_ampl=root_ampl.titled(&title, ("sans-serif", 100).into_font()).unwrap();
+
+    let root_ampl = root_ampl
+        .titled(&title, ("sans-serif", 100).into_font())
+        .unwrap();
     //root_ampl.draw_text(&title, &("sans-serif", 250).into_text_style(&root_ampl), (200,200)).unwrap();
 
     let drawing_areas_ampl = root_ampl.split_evenly((NANTS, NANTS));
 
-    let out_img_name = img_out_dir.join(fname.clone() + "_phase.png");
+    let out_img_name = img_out_dir.join(fname + "_phase.png");
 
     let root_phase = BitMapBackend::new(&out_img_name, (2000, 2000)).into_drawing_area();
 
     root_phase.fill(&WHITE).unwrap();
-    let title = format!("phase-{}",now.format("%m%d-%T"));
-    let root_phase=root_phase.titled(&title, ("sans-serif", 100).into_font()).unwrap();
+    let title = format!("phase-{}", now.format("%m%d-%T"));
+    let root_phase = root_phase
+        .titled(&title, ("sans-serif", 100).into_font())
+        .unwrap();
     //root_phase.draw_text(&title, &("sans-serif", 250).into_text_style(&root_ampl), (200,200)).unwrap();
 
     let drawing_areas_phase = root_phase.split_evenly((NANTS, NANTS));
-
-    
-    
-    
 
     for (n, (root_ampl1, root_phase1)) in drawing_areas_ampl
         .iter()
@@ -202,8 +203,8 @@ fn plot_spec_all(
         let data = &spec[ncorr * NCH..(ncorr + 1) * NCH];
 
         root_ampl1.fill(&WHITE).unwrap();
-        
-        let mut chart = ChartBuilder::on(&root_ampl1)
+
+        let mut chart = ChartBuilder::on(root_ampl1)
             .margin(5)
             .build_cartesian_2d(freq[0]..freq[freq.len() - 1], 50_f32..100_f32)
             .unwrap();
@@ -212,13 +213,13 @@ fn plot_spec_all(
         chart
             .draw_series(LineSeries::new(
                 freq.iter().cloned().zip(data.iter().cloned()),
-                &RED,
+                RED,
             ))
             .unwrap();
 
         root_phase1.fill(&WHITE).unwrap();
         let data = &phase[ncorr * NCH..(ncorr + 1) * NCH];
-        let mut chart = ChartBuilder::on(&root_phase1)
+        let mut chart = ChartBuilder::on(root_phase1)
             .margin(5)
             .build_cartesian_2d(freq[0]..freq[freq.len() - 1], -180_f32..180_f32)
             .unwrap();
@@ -226,8 +227,12 @@ fn plot_spec_all(
 
         chart
             .draw_series(LineSeries::new(
-                freq.iter().cloned().zip(data.iter().cloned()).skip(NCH/4+100).take(NCH*3/4-200),
-                &BLUE,
+                freq.iter()
+                    .cloned()
+                    .zip(data.iter().cloned())
+                    .skip(NCH / 4 + 100)
+                    .take(NCH * 3 / 4 - 200),
+                BLUE,
             ))
             .unwrap();
         //root1.present().unwrap()
@@ -282,8 +287,9 @@ fn power_all(
             vmax = vmax.max(pwr);
         }
     }
-
+    #[allow(clippy::needless_range_loop)]
     for i in 0..NANTS {
+        #[allow(clippy::needless_range_loop)]
         for j in 0..i {
             matrix[i][j] = vmax;
         }
@@ -294,8 +300,9 @@ fn power_all(
             matrix
                 .iter()
                 .zip(0..)
-                .map(|(l, y)| l.iter().zip(0..).map(move |(v, x)| (x as i32, y as i32, v)))
-                .flatten()
+                .flat_map(|(l, y)| l.iter().zip(0..).map(move |(v, x)| (x as i32, y as i32, v)))
+                //.map(|(l, y)| l.iter().zip(0..).map(move |(v, x)| (x as i32, y as i32, v)))
+                //.flatten()
                 .map(|(x, y, v)| {
                     Rectangle::new(
                         [(x, y), (x + 1, y + 1)],

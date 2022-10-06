@@ -2,39 +2,49 @@
 <html>
 
 <head>
+    <style>
+        .seamless{
+            margin: 0mm;
+        }
 
+        .box {
+            display: flex;
+            margin: 0mm;
+          }
+    </style>
 </head>
 
 
 <body style="background-color: darkblue;color: white;">
-    <div id="div_current_time" style="">
-        <p id="current_time"></p>
+    <div class="seamless" id="div_current_time" style="font-size: 1cm;">
+        <p class="seamless" id="current_time"></p>
     </div>
 
-    <div id="div_timestamp" style="">
-        <p id="timestamp"></p>
+    <div class="seamless" id="div_timestamp" style="font-size: 1cm;">
+        <p class="seamless" id="timestamp"></p>
     </div>
 
-    <div id="div_data_time" style="">
-        <p id="data_ts"></p>
+    <div class="seamless" id="div_data_time" style="font-size: 1cm;">
+        <p class="seamless" id="data_ts"></p>
     </div>
 
-    <div id="div_status" style="">
-        <p id="status" style="font-size:1cm;"></p>
+    <div class="seamless" id="div_status" style="">
+        <p class="seamless" id="status" style="font-size:1cm;"></p>
     </div>
-    <div id="div_health" style="font-size: 0.5cm;">
-        <p>板卡温度</p>
+
+    <div class="box">
+    <div class="seamless" id="div_health" style="font-size: 0.5cm;">
+        <p class="seamless">板卡温度</p>
         <ul id="temperature_list"></ul>
     </div>
 
 
-    <div id="div_disks" style="font-size: 0.5cm;">
-        <p style="">磁盘状态</p>
+    <div class="seamless" id="div_disks" style="font-size: 0.5cm;">
+        <p class="seamless" style="">磁盘状态</p>
         <ul id="disk_list"></ul>
     </div>
-
+</div>
     <center>
-
         <h1>全部相位</h1>
         <img id="all_phase" src="/data/imgs/spec_all_phase.png" width="1600px">
         <hr style="height:10px;border:none;color:rgb(0, 0, 0);background-color:rgb(0, 0, 0);" />
