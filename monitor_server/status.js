@@ -23,7 +23,7 @@ var t = setInterval(function () {
             timestamp = Date.parse(data["time"]);
             let dt = (Date.now() - timestamp) / 1000.0;
             dt = Math.round(dt * 10) / 10
-            textContent = "最近一次状态更新时间:   " + dt + " 秒之前";
+            textContent = "最近一次状态更新时间:" + dt + " 秒之前";
 
             if (dt > 45) {
                 textContent += "---警告：长时间未更新，检查仪器状态！";
@@ -40,7 +40,7 @@ var t = setInterval(function () {
         last_data_time = Date.parse(data['time']);
         let dt = (Date.now() - last_data_time) / 1000.0;
         dt = Math.round((dt - 3) * 10) / 10;
-        textContent = "最近一次数据到达时间： " + dt + " 秒之前";
+        textContent = "最近一次数据到达时间:" + dt + " 秒之前";
         if (dt > 10) {
             textContent += "---警告：长时间未更新，检查仪器状态！";
             document.getElementById("data_ts").style.backgroundColor = "red";
@@ -100,7 +100,7 @@ var t = setInterval(function () {
                 //console.log(data[dev])
             }
         });
-    document.getElementById("current_time").innerHTML = new Date();
+    document.getElementById("current_time").innerHTML = (new Date()).toLocaleString('zh-CN');
 }, 1000);
 
 const ants = [
