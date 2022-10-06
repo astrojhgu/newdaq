@@ -157,10 +157,7 @@ for (let i = 0; i < 8; ++i) {
 
 function update_imgs() {
     console.log("Images updated");
-    document.getElementById("all_phase").src = "/data/imgs/spec_all_phase.png?time=" + new Date();
-    document.getElementById("all_ampl").src = "/data/imgs/spec_all_ampl.png?time=" + new Date();
-    document.getElementById("all_power").src = "/data/imgs/power.png?time=" + new Date();
-
+    document.getElementById("all_spec").src = "/data/imgs/spec_all.png?time=" + new Date();
     for (let ant of ants) {
         document.getElementById("spec_" + ant).src = "/data/imgs/" + ant + ant + "_ampl.png?time=" + new Date();
         document.getElementById("corr_E01" + ant + "_ampl").src = "/data/imgs/" + "E01" + ant + "_ampl.png?time=" + new Date();

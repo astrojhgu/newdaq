@@ -159,118 +159,6 @@ fn plot_spec_all(
     let spec: Vec<_> = payload.iter().map(|x| x.norm().log10() * 10.0).collect();
     let phase: Vec<_> = payload.iter().map(|x| x.arg().to_degrees()).collect();
 
-    //println!("{:?}", spec);
-    let now = Local::now();
-    let img_out_dir = PathBuf::from(IMG_DIR_STR);
-
-    let out_img_name = img_out_dir.join(fname.clone() + "_ampl.png");
-    let title = format!("ampl-{}", now.format("%m%d-%T"));
-    let root_ampl = BitMapBackend::new(&out_img_name, (2000, 2000)).into_drawing_area();
-    root_ampl.fill(&WHITE).unwrap();
-
-    let root_ampl = root_ampl
-        .titled(&title, ("sans-serif", 100).into_font())
-        .unwrap();
-    //root_ampl.draw_text(&title, &("sans-serif", 250).into_text_style(&root_ampl), (200,200)).unwrap();
-
-    let drawing_areas_ampl = root_ampl.split_evenly((NANTS, NANTS));
-
-    let out_img_name = img_out_dir.join(fname + "_phase.png");
-
-    let root_phase = BitMapBackend::new(&out_img_name, (2000, 2000)).into_drawing_area();
-
-    root_phase.fill(&WHITE).unwrap();
-    let title = format!("phase-{}", now.format("%m%d-%T"));
-    let root_phase = root_phase
-        .titled(&title, ("sans-serif", 100).into_font())
-        .unwrap();
-    //root_phase.draw_text(&title, &("sans-serif", 250).into_text_style(&root_ampl), (200,200)).unwrap();
-
-    let drawing_areas_phase = root_phase.split_evenly((NANTS, NANTS));
-
-    for (n, (root_ampl1, root_phase1)) in drawing_areas_ampl
-        .iter()
-        .zip(drawing_areas_phase.iter())
-        .enumerate()
-    {
-        let i = n / NANTS;
-        let j = n % NANTS;
-        if i > j {
-            continue;
-        }
-
-        let ncorr = corr_prod_map[&(i, j)];
-        let data = &spec[ncorr * NCH..(ncorr + 1) * NCH];
-
-        root_ampl1.fill(&WHITE).unwrap();
-
-        let mut chart = ChartBuilder::on(root_ampl1)
-            .margin(5)
-            .build_cartesian_2d(freq[0]..freq[freq.len() - 1], 50_f32..100_f32)
-            .unwrap();
-        //chart.configure_mesh().draw().unwrap();
-
-        chart
-            .draw_series(LineSeries::new(
-                freq.iter().cloned().zip(data.iter().cloned()),
-                RED,
-            ))
-            .unwrap();
-
-        root_phase1.fill(&WHITE).unwrap();
-        let data = &phase[ncorr * NCH..(ncorr + 1) * NCH];
-        let mut chart = ChartBuilder::on(root_phase1)
-            .margin(5)
-            .build_cartesian_2d(freq[0]..freq[freq.len() - 1], -180_f32..180_f32)
-            .unwrap();
-        //chart.configure_mesh().draw().unwrap();
-
-        chart
-            .draw_series(LineSeries::new(
-                freq.iter()
-                    .cloned()
-                    .zip(data.iter().cloned())
-                    .skip(NCH / 4 + 100)
-                    .take(NCH * 3 / 4 - 200),
-                BLUE,
-            ))
-            .unwrap();
-        //root1.present().unwrap()
-    }
-
-    root_ampl.present().unwrap();
-    root_phase.present().unwrap();
-}
-
-fn power_all(
-    payload: &[Complex32],
-    corr_prod_map: &BTreeMap<(usize, usize), usize>,
-    _station_ant_map: &BTreeMap<String, usize>,
-    _freq: &[f32],
-) {
-    let now = Local::now();
-    let caption = format!("Power {}", now.format("%m%d-%T"));
-    let root = BitMapBackend::new("/dev/shm/imgs/power.png", (800, 600)).into_drawing_area();
-    root.fill(&WHITE).unwrap();
-    let mut chart = ChartBuilder::on(&root)
-        .caption(&caption, ("sans-serif", 20))
-        .margin(5)
-        .top_x_label_area_size(40)
-        .y_label_area_size(40)
-        .build_cartesian_2d(0i32..NANTS as i32, NANTS as i32..0_i32)
-        .unwrap();
-
-    chart
-        .configure_mesh()
-        .x_labels(NANTS)
-        .y_labels(NANTS)
-        .max_light_lines(4)
-        .disable_x_mesh()
-        .disable_y_mesh()
-        .label_style(("sans-serif", 12))
-        .draw()
-        .unwrap();
-
     let mut matrix = [[1.0_f32; NANTS]; NANTS];
 
     let mut vmax = 0_f32;
@@ -287,31 +175,74 @@ fn power_all(
             vmax = vmax.max(pwr);
         }
     }
-    #[allow(clippy::needless_range_loop)]
-    for i in 0..NANTS {
-        #[allow(clippy::needless_range_loop)]
-        for j in 0..i {
-            matrix[i][j] = vmax;
-        }
-    }
 
-    chart
-        .draw_series(
-            matrix
-                .iter()
-                .zip(0..)
-                .flat_map(|(l, y)| l.iter().zip(0..).map(move |(v, x)| (x as i32, y as i32, v)))
-                //.map(|(l, y)| l.iter().zip(0..).map(move |(v, x)| (x as i32, y as i32, v)))
-                //.flatten()
-                .map(|(x, y, v)| {
-                    Rectangle::new(
-                        [(x, y), (x + 1, y + 1)],
-                        HSLColor(0.45, 0.7, (*v / vmax) as f64).filled(),
-                    )
-                }),
-        )
+    //println!("{:?}", spec);
+    let now = Local::now();
+    let img_out_dir = PathBuf::from(IMG_DIR_STR);
+
+    let out_img_name = img_out_dir.join(fname + ".png");
+    let title = format!("{}", now.format("%m%d-%T"));
+    let root = BitMapBackend::new(&out_img_name, (2000, 3000)).into_drawing_area();
+    root.fill(&WHITE).unwrap();
+
+    let root = root
+        .titled(&title, ("sans-serif", 100).into_font())
         .unwrap();
+    //root_ampl.draw_text(&title, &("sans-serif", 250).into_text_style(&root_ampl), (200,200)).unwrap();
 
+    let drawing_areas_ampl = root.split_evenly((2 * NANTS, NANTS));
+
+    for (n, root1) in drawing_areas_ampl.iter().enumerate() {
+        let i = n / NANTS;
+        let j = n % NANTS;
+        if i / 2 > j {
+            continue;
+        }
+
+        let ncorr = corr_prod_map[&(i / 2, j)];
+
+        let v = matrix[i / 2][j];
+
+        if i % 2 == 0 {
+            let c = HSLColor(0.45, 0.7, (v / vmax) as f64);
+            root1.fill(&c).unwrap();
+            let data = &spec[ncorr * NCH..(ncorr + 1) * NCH];
+            let mut chart = ChartBuilder::on(root1)
+                .margin(5)
+                .build_cartesian_2d(freq[0]..freq[freq.len() - 1], 50_f32..100_f32)
+                .unwrap();
+            //chart.configure_mesh().draw().unwrap();
+
+            chart
+                .draw_series(LineSeries::new(
+                    freq.iter().cloned().zip(data.iter().cloned()),
+                    RED,
+                ))
+                .unwrap();
+        } else {
+            let c = HSLColor(0.6, 0.7, (v / vmax) as f64);
+            root1.fill(&c).unwrap();
+            let data = &phase[ncorr * NCH..(ncorr + 1) * NCH];
+            let mut chart = ChartBuilder::on(root1)
+                .margin(5)
+                .build_cartesian_2d(freq[0]..freq[freq.len() - 1], -180_f32..180_f32)
+                .unwrap();
+            //chart.configure_mesh().draw().unwrap();
+
+            chart
+                .draw_series(LineSeries::new(
+                    freq.iter()
+                        .cloned()
+                        .zip(data.iter().cloned())
+                        .skip(NCH / 4 + 100)
+                        .take(NCH * 3 / 4 - 200),
+                    BLUE,
+                ))
+                .unwrap();
+        }
+
+        //root1.present().unwrap()
+    }
     root.present().unwrap();
 }
 
@@ -350,8 +281,6 @@ fn update() {
             &freq,
         );
     }
-
-    power_all(&payload, &corr_prod_map, &station_ant_map, &freq);
     plot_spec_all(&payload, &corr_prod_map, &station_ant_map, &freq);
 }
 
