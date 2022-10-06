@@ -108,7 +108,7 @@ fn plot_spec(
     let root = BitMapBackend::new(&out_img_name, (800, 600)).into_drawing_area();
     root.fill(&WHITE).unwrap();
     let now = Local::now();
-    let caption = format!("{}-{}_ampl", fname, now.format("%m%d-%T"));
+    let caption = format!("{}-{}_ampl", fname, now.format("%m/%d-%T"));
     let mut chart = ChartBuilder::on(&root)
         .caption(&caption, ("sans-serif", 50).into_font())
         .margin(5)
@@ -129,13 +129,13 @@ fn plot_spec(
     let out_img_name = img_out_dir.join(fname.clone() + "_phase.png");
     let root = BitMapBackend::new(&out_img_name, (800, 600)).into_drawing_area();
     root.fill(&WHITE).unwrap();
-    let caption = format!("{}-{}_phase", fname, now.format("%m%d-%T"));
+    let caption = format!("{}-{}_phase", fname, now.format("%m/%d-%T"));
     let mut chart = ChartBuilder::on(&root)
         .caption(caption, ("sans-serif", 50).into_font())
         .margin(5)
         .x_label_area_size(30)
         .y_label_area_size(30)
-        .build_cartesian_2d(freq[0]..freq[freq.len() - 1], -185_f32..185_f32)
+        .build_cartesian_2d(freq[0]..freq[freq.len() - 1], -30_f32..30_f32)
         .unwrap();
     chart.configure_mesh().draw().unwrap();
 
@@ -181,7 +181,7 @@ fn plot_spec_all(
     let img_out_dir = PathBuf::from(IMG_DIR_STR);
 
     let out_img_name = img_out_dir.join(fname + ".png");
-    let title = format!("{}", now.format("%m%d-%T"));
+    let title = format!("{}", now.format("%m/%d-%T"));
     let root = BitMapBackend::new(&out_img_name, (2000, 3000)).into_drawing_area();
     root.fill(&WHITE).unwrap();
 

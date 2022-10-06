@@ -58,7 +58,7 @@ var t = setInterval(function () {
             temperature_list.children = [];
             for (i = 0; i < 5; ++i) {
                 const node = document.createElement("li");
-                const textnode = document.createTextNode("板卡 " + i + ": " + temperature[i * 2] + " 度 " + temperature[i * 2 + 1] + " 度");
+                const textnode = document.createTextNode("板卡 " + i + ": " + temperature[i * 2] + " " + temperature[i * 2 + 1]);
                 node.appendChild(textnode);
                 temperature_list.appendChild(node);
             }
@@ -84,7 +84,7 @@ var t = setInterval(function () {
             disk_list.innerHTML = "";
             for (dev in data) {
                 const node = document.createElement("li")
-                const textnode = document.createTextNode(data[dev]['slot'].split("/")[2] + " " + dev + " :  " + translate(data[dev]['state']) + " " + data[dev]['occ']);
+                const textnode = document.createTextNode(data[dev]['slot'].split("/")[2].replaceAll('s', '盘位：') + " 盘符 " + dev + " :  " + translate(data[dev]['state']) + " " + data[dev]['occ']);
                 node.appendChild(textnode)
                 if (data[dev]['state'] == "Writing") {
                     node.style.backgroundColor = "green";
@@ -100,7 +100,7 @@ var t = setInterval(function () {
                 //console.log(data[dev])
             }
         });
-    document.getElementById("div_current_time").innerHTML = new Date();
+    document.getElementById("current_time").innerHTML = new Date();
 }, 1000);
 
 const ants = [

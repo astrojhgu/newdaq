@@ -3,47 +3,55 @@
 
 <head>
     <style>
-        .seamless{
+        .seamless {
             margin: 0mm;
         }
 
         .box {
             display: flex;
             margin: 0mm;
-          }
+        }
+
+        .lists {
+            font-size: 0.65cm;
+        }
+
+        .title{
+            font-size: 0.75cm;
+        }
+
+        #current_time {
+            background-color: lightgreen;
+            color: black
+        }
     </style>
 </head>
 
 
 <body style="background-color: darkblue;color: white;">
-    <div class="seamless" id="div_current_time" style="font-size: 1cm;">
-        <p class="seamless" id="current_time"></p>
-    </div>
-
-    <div class="seamless" id="div_timestamp" style="font-size: 1cm;">
-        <p class="seamless" id="timestamp"></p>
-    </div>
-
-    <div class="seamless" id="div_data_time" style="font-size: 1cm;">
-        <p class="seamless" id="data_ts"></p>
-    </div>
-
-    <div class="seamless" id="div_status" style="">
-        <p class="seamless" id="status" style="font-size:1cm;"></p>
-    </div>
-
     <div class="box">
-    <div class="seamless" id="div_health" style="font-size: 0.5cm;">
-        <p class="seamless">板卡温度</p>
-        <ul id="temperature_list"></ul>
-    </div>
+        <div class="seamless" id="div_health">
+            <p class="title">板卡温度</p>
+            <ul class="lists" id="temperature_list"></ul>
+        </div>
 
 
-    <div class="seamless" id="div_disks" style="font-size: 0.5cm;">
-        <p class="seamless" style="">磁盘状态</p>
-        <ul id="disk_list"></ul>
+        <div class="seamless" id="div_disks">
+            <p class="title">磁盘状态</p>
+            <ul class="lists" id="disk_list"></ul>
+        </div>
+
+        <div class="seamless">
+            <p class="title">运行状态</p>
+            <ul class="lists">
+                <li id="current_time"></li>
+                <li id="timestamp"></li>
+                <li id="data_ts"></li>
+                <li id="status"></li>
+            </ul>
+        </div>
     </div>
-</div>
+    </div>
     <center>
         <h1>全部相位和幅度</h1>
         <img id="all_spec" src="/data/imgs/spec_all.png" width="1600px">
