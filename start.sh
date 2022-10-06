@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+./init.sh
+
 rm -f dev_reply.log
 sleep 5
 while [ ! -e dev_reply.log ]; do

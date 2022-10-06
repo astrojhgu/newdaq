@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-sudo ifconfig ens4f0 promisc mtu 9000
+sudo ifconfig enp101s0f0 promisc mtu 9000
