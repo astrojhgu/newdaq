@@ -57,10 +57,13 @@ impl CommandFrame {
                 )
                 .unwrap(),
             ),
-            ModeFor40GB => Box::new(
-                GB40::unpack_from_slice(&self.data[..<GB40 as PackedStruct>::ByteArray::len()])
-                    .unwrap(),
-            ),
+            ModeFor40GB => Box::new({
+                let mut gb40 = GB40::default();
+                let sz1 = <GB40PortInfo as PackedStruct>::ByteArray::len();
+                let sz2 = <GB40AddrInfo as PackedStruct>::ByteArray::len();
+                gb40.from_data(&self.data[..4 * (sz1 + 2 * sz2)]);
+                gb40
+            }),
             QueryDataStatus => Box::new(
                 DataStatus::unpack_from_slice(
                     &self.data[..<DataStatus as PackedStruct>::ByteArray::len()],
@@ -373,43 +376,53 @@ impl Command for HealthInfo {
 }
 
 #[derive(Clone, Copy, PackedStruct, PartialEq, Eq, Debug, Serialize, Deserialize, Default)]
+pub struct GB40PortInfo {
+    enabled: u8, //本卡是否工作 非0有效
+    pid: u8,     //若board_num1为有效，该字段为板卡1具体工作的通道，配置范围为 0~7
+}
+
+#[derive(Clone, Copy, PackedStruct, PartialEq, Eq, Debug, Serialize, Deserialize, Default)]
 #[packed_struct(endian = "lsb")]
+pub struct GB40AddrInfo {
+    ip: [u8; 4], //第i块卡对应的本地IP配置，ip[0]非0有效
+    port: u16,   //第i块卡对应的本地端口配置，当local_ip1[0]有效时，该字段也会进行同步配置
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Serialize, Deserialize, Default)]
 pub struct GB40 {
-    pub board_num1: u8, // 第1块卡是否工作 非0有效
-    pub channel1: u8,   // 若board_num1为有效，该字段为板卡1具体工作的通道，配置范围为 0~7
+    pub port_info: [GB40PortInfo; 4],
+    pub dst_ip: [GB40AddrInfo; 4],
+    pub src_ip: [GB40AddrInfo; 4],
+}
 
-    pub board_num2: u8, // 第2块卡是否工作 非0有效
-    pub channel2: u8,   // 若board_num2为有效，该字段为板卡2具体工作的通道，配置范围为 0~7
+impl GB40 {
+    pub fn disable_board(&mut self, bid: u8) {
+        assert!(bid < 4);
+        self.port_info[bid as usize].enabled = 0;
+        self.src_ip[bid as usize].ip[0] = 0;
+        self.dst_ip[bid as usize].ip[0] = 0;
+    }
 
-    pub board_num3: u8, // 第3块卡是否工作 非0有效
-    pub channel3: u8,   // 若board_num3为有效，该字段为板卡3具体工作的通道，配置范围为 0~7
-
-    pub board_num4: u8, // 第5块卡是否工作 非0有效
-    pub channel4: u8,   // 若board_num4为有效，该字段为板卡5具体工作的通道，配置范围为 0~7
-
-    pub local_ip1: [u8; 4], // 第1块卡对应的本地IP配置，local_ip1[0]非0有效
-    pub local_port1: u16, // 第1块卡对应的本地端口配置，当local_ip1[0]有效时，该字段也会进行同步配置
-
-    pub local_ip2: [u8; 4], // 第2块卡对应的本地IP配置，local_ip2[0]非0有效
-    pub local_port2: u16, // 第2块卡对应的本地端口配置，当local_ip2[0]有效时，该字段也会进行同步配置
-
-    pub local_ip3: [u8; 4], // 第3块卡对应的本地IP配置，local_ip3[0]非0有效
-    pub local_port3: u16, // 第3块卡对应的本地端口配置，当local_ip3[0]有效时，该字段也会进行同步配置
-
-    pub local_ip4: [u8; 4], // 第5块卡对应的本地IP配置，local_ip4[0]非0有效
-    pub local_port4: u16, // 第5块卡对应的本地端口配置，当local_ip4[0]有效时，该字段也会进行同步配置
-
-    pub optical_ip1: [u8; 4], // 第1块卡对应的对端IP配置，optical_ip1[0]非0有效
-    pub optical_port1: u16, // 第1块卡对应的对端端口配置，当optical_ip1[0]有效时，该字段也会进行同步配置
-
-    pub optical_ip2: [u8; 4], // 第2块卡对应的对端IP配置，optical_ip2[0]非0有效
-    pub optical_port2: u16, // 第2块卡对应的对端端口配置，当optical_ip2[0]有效时，该字段也会进行同步配置
-
-    pub optical_ip3: [u8; 4], // 第3块卡对应的对端IP配置，optical_ip3[0]非0有效
-    pub optical_port3: u16, // 第3块卡对应的对端端口配置，当optical_ip3[0]有效时，该字段也会进行同步配置
-
-    pub optical_ip4: [u8; 4], // 第5块卡对应的对端IP配置，optical_ip4[0]非0有效
-    pub optical_port4: u16, // 第5块卡对应的对端端口配置，当optical_ip4[0]有效时，该字段也会进行同步配置
+    pub fn enable_board(
+        &mut self,
+        bid: u8,
+        pid: u8,
+        src_ip: [u8; 4],
+        src_port: u16,
+        dst_ip: [u8; 4],
+        dst_port: u16,
+    ) {
+        assert!(bid < 4);
+        self.port_info[bid as usize] = GB40PortInfo { enabled: 1, pid };
+        self.dst_ip[bid as usize] = GB40AddrInfo {
+            ip: dst_ip,
+            port: dst_port,
+        };
+        self.src_ip[bid as usize] = GB40AddrInfo {
+            ip: src_ip,
+            port: src_port,
+        };
+    }
 }
 
 impl Command for GB40 {
@@ -418,18 +431,86 @@ impl Command for GB40 {
     }
 
     fn cmd_string(&self) -> String {
-        "GB40".to_string()
+        let mut result = String::default();
+        for (i, (p, (a1, a2))) in self
+            .port_info
+            .iter()
+            .zip(self.src_ip.iter().zip(self.dst_ip.iter()))
+            .enumerate()
+        {
+            result += &format!(
+                "{}: {} {} {}.{}.{}.{}:{} -> {}.{}.{}.{}:{} \n",
+                i,
+                if p.enabled > 0 { "enabled" } else { "disabled" },
+                p.pid,
+                a1.ip[0],
+                a1.ip[1],
+                a1.ip[2],
+                a1.ip[3],
+                a1.port,
+                a2.ip[0],
+                a2.ip[1],
+                a2.ip[2],
+                a2.ip[3],
+                a2.port
+            );
+        }
+        result
     }
 
     fn fill_data(&self, d: &mut [u8]) -> usize {
-        let sz = <Self as PackedStruct>::ByteArray::len();
-        self.pack_to_slice(&mut d[..sz]).unwrap();
-        sz
+        //let sz = <Self as PackedStruct>::ByteArray::len();
+        let sz1 = <GB40PortInfo as PackedStruct>::ByteArray::len();
+        let sz2 = <GB40AddrInfo as PackedStruct>::ByteArray::len();
+        self.port_info
+            .iter()
+            .zip(d.chunks_mut(sz1))
+            .for_each(|(x, d1)| {
+                x.pack_to_slice(d1).unwrap();
+            });
+
+        self.dst_ip
+            .iter()
+            .zip(d[4 * sz1..].chunks_mut(sz2))
+            .for_each(|(x, d1)| {
+                x.pack_to_slice(d1).unwrap();
+            });
+
+        self.src_ip
+            .iter()
+            .zip(d[4 * sz1 + 4 * sz2..].chunks_mut(sz2))
+            .for_each(|(x, d1)| {
+                x.pack_to_slice(d1).unwrap();
+            });
+
+        4 * sz1 + 8 * sz2
     }
 
     fn from_data(&mut self, d: &[u8]) {
-        let sz = <Self as PackedStruct>::ByteArray::len();
-        *self = Self::unpack_from_slice(&d[..sz]).unwrap();
+        let sz1 = <GB40PortInfo as PackedStruct>::ByteArray::len();
+        let sz2 = <GB40AddrInfo as PackedStruct>::ByteArray::len();
+
+        self.port_info
+            .iter_mut()
+            .zip(d.chunks(sz1))
+            .for_each(|(x, d1)| {
+                //x.pack_to_slice(d1).unwrap();
+                *x = GB40PortInfo::unpack_from_slice(d1).unwrap();
+            });
+
+        self.dst_ip
+            .iter_mut()
+            .zip(d[4 * sz1..].chunks(sz2))
+            .for_each(|(x, d1)| {
+                *x = GB40AddrInfo::unpack_from_slice(d1).unwrap();
+            });
+
+        self.src_ip
+            .iter_mut()
+            .zip(d[4 * sz1 + 4 * sz2..].chunks(sz2))
+            .for_each(|(x, d1)| {
+                *x = GB40AddrInfo::unpack_from_slice(d1).unwrap();
+            });
     }
 
     fn to_enum(&self) -> CmdEnum {
