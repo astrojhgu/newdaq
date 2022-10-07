@@ -7,6 +7,8 @@ function translate(s) {
         return "--空盘--";
     } else if (s == 'Ejected') {
         return "未被挂载";
+    } else if (s == 'Remounted') {
+        return "重新挂载"
     }
     else {
         return s;
@@ -45,9 +47,9 @@ var t = setInterval(function () {
             textContent += "---警告：长时间未更新，检查仪器状态！";
             document.getElementById("data_ts").style.backgroundColor = "red";
         } else {
-            document.getElementById("data_ts").style.backgroundColor="green";
+            document.getElementById("data_ts").style.backgroundColor = "green";
         }
-        document.getElementById("data_ts").textContent=textContent;
+        document.getElementById("data_ts").textContent = textContent;
     })
 
     fetch("/data/temperature.json").then((response) => response.json())
@@ -95,6 +97,9 @@ var t = setInterval(function () {
                 } else if (data[dev]['state'] == "Spare") {
                     node.style.backgroundColor = "yellow";
                     node.style.color = "green";
+                }else if (data[dev]['state']=="Remounted"){
+                    node.style.backgroundColor = "cyan";
+                    node.style.color = "magenta";
                 }
                 disk_list.appendChild(node);
                 //console.log(data[dev])
