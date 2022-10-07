@@ -49,8 +49,14 @@ function eject_dev() {
     dev=$1
     s=$(dev2slot ${dev})
 
-    echo ejecting $dev @ $s
-    sudo umount /dev/${dev}1 && sudo storcli ${s} start locate && echo done
+    if [ -e /mnt/${dev}/ejected ]; then
+        echo This partation is mounted again on purpose, no need to eject
+    else
+        echo ejecting $dev @ $s
+        sudo touch /mnt/${dev}/ejected
+        until sudo umount /dev/${dev}1; do sleep 1; done
+        sudo storcli ${s} start locate && echo done
+    fi
 }
 
 function format_all() {
@@ -97,8 +103,10 @@ function inspect_disks() {
         if df | grep $dev >/dev/null; then
             occ=$(df | grep ${dev} | awk '{printf("%s /  %s   %s", $3,$2,$5)}')
             datestr=$(date +%Y%m%d)
-            if [ -e /mnt/${dev}/time-0-${datestr}.txt  ]; then
+            if [ -e /mnt/${dev}/time-0-${datestr}.txt ] && [ ! -e /mnt/${dev}/ejected ]; then
                 state=Writing
+            elif [ -e /mnt/${dev}/ejected ]; then
+                state=Remounted
             else
                 state=Spare
             fi
