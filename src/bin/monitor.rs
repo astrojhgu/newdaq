@@ -182,7 +182,7 @@ fn plot_spec_all(
 
     let out_img_name = img_out_dir.join(fname + ".png");
     let title = format!("{}", now.format("%m/%d-%T"));
-    let root = BitMapBackend::new(&out_img_name, (2000, 3000)).into_drawing_area();
+    let root = BitMapBackend::new(&out_img_name, (2000, 2500)).into_drawing_area();
     root.fill(&WHITE).unwrap();
 
     let root = root
