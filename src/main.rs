@@ -22,11 +22,11 @@ fn main() {
         CmdEnum::GB40(gb40),
     ];
 
-    let mut data = vec![0_u8; 64];
+    let mut data = vec![0_u8; 72];
 
     println!("{}", gb40.fill_data(&mut data));
 
-    println!("{:?}", gb40);
+    println!("{:?}", &data);
 
     gb40_1.from_data(&data);
 

@@ -17,10 +17,16 @@ struct Args {
     /// config
     #[clap(short = 'a', long = "add", value_parser)]
     addr_with_port: String,
+
+    /// If debug
+    #[clap(short('d'), long("dbg"), action)]
+    dbg_of: Option<String>,
 }
 
 fn main() {
     let args = Args::parse();
+
+    let debuging = args.dbg_of.is_some();
 
     let addr = args.addr_with_port;
     let udp = UdpSocket::bind(addr).unwrap();
@@ -32,6 +38,11 @@ fn main() {
         println!("{} bytes received from {} ", s, remote_addr);
         let size = <CommandFrame as PackedStruct>::ByteArray::len();
         let cmd = CommandFrame::unpack_from_slice(&buffer[..size]).unwrap();
+
+        if debuging {
+            println!("{:?}", cmd);
+        }
+
         let cmd = cmd.get_cmd();
 
         let mut outfile = std::fs::File::create("dev_reply.log").unwrap();
@@ -49,6 +60,16 @@ fn main() {
 
         let enum_cmd = cmd.to_enum();
         //create_dir_all("./reply_data").unwrap();
+
+        if let Some(ref dbg_of) = args.dbg_of {
+            let mut dbg_file = std::fs::OpenOptions::new()
+                .create(true)
+                .append(true)
+                .open(dbg_of)
+                .expect("File open failed");
+            to_yaml(&mut dbg_file, &enum_cmd).unwrap();
+        }
+
         match enum_cmd {
             CmdEnum::HealthInfo(x) => {
                 let mut outfile = File::create("/dev/shm/temperature.yaml").unwrap();

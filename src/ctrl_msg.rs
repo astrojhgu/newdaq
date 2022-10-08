@@ -385,14 +385,14 @@ pub struct GB40PortInfo {
 #[packed_struct(endian = "lsb")]
 pub struct GB40AddrInfo {
     ip: [u8; 4], //第i块卡对应的本地IP配置，ip[0]非0有效
-    port: u16,   //第i块卡对应的本地端口配置，当local_ip1[0]有效时，该字段也会进行同步配置
+    port: u32,   //第i块卡对应的本地端口配置，当local_ip1[0]有效时，该字段也会进行同步配置
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Serialize, Deserialize, Default)]
 pub struct GB40 {
     pub port_info: [GB40PortInfo; 4],
-    pub dst_ip: [GB40AddrInfo; 4],
     pub src_ip: [GB40AddrInfo; 4],
+    pub dst_ip: [GB40AddrInfo; 4],
 }
 
 impl GB40 {
@@ -408,9 +408,9 @@ impl GB40 {
         bid: u8,
         pid: u8,
         src_ip: [u8; 4],
-        src_port: u16,
+        src_port: u32,
         dst_ip: [u8; 4],
-        dst_port: u16,
+        dst_port: u32,
     ) {
         assert!(bid < 4);
         self.port_info[bid as usize] = GB40PortInfo { enabled: 1, pid };
@@ -469,14 +469,14 @@ impl Command for GB40 {
                 x.pack_to_slice(d1).unwrap();
             });
 
-        self.dst_ip
+        self.src_ip
             .iter()
             .zip(d[4 * sz1..].chunks_mut(sz2))
             .for_each(|(x, d1)| {
                 x.pack_to_slice(d1).unwrap();
             });
 
-        self.src_ip
+        self.dst_ip
             .iter()
             .zip(d[4 * sz1 + 4 * sz2..].chunks_mut(sz2))
             .for_each(|(x, d1)| {
@@ -498,14 +498,14 @@ impl Command for GB40 {
                 *x = GB40PortInfo::unpack_from_slice(d1).unwrap();
             });
 
-        self.dst_ip
+        self.src_ip
             .iter_mut()
             .zip(d[4 * sz1..].chunks(sz2))
             .for_each(|(x, d1)| {
                 *x = GB40AddrInfo::unpack_from_slice(d1).unwrap();
             });
 
-        self.src_ip
+        self.dst_ip
             .iter_mut()
             .zip(d[4 * sz1 + 4 * sz2..].chunks(sz2))
             .for_each(|(x, d1)| {

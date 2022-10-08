@@ -20,7 +20,7 @@ function translate(s) {
 
 var t = setInterval(function () {
     console.log("State updated");
-    fetch("/data/last_msg_time.json").then((response) => response.json())
+    fetch("/data/last_msg_time.json?time=" + new Date()).then((response) => response.json())
         .then((data) => {
             timestamp = Date.parse(data["time"]);
             let dt = (Date.now() - timestamp) / 1000.0;
@@ -38,7 +38,7 @@ var t = setInterval(function () {
             //document.getElementById("timestamp").textContent="Updated:   "+timestamp;
         });
 
-    fetch("/data/last_data_time.json").then((response) => response.json()).then((data) => {
+    fetch("/data/last_data_time.json?time=" + new Date()).then((response) => response.json()).then((data) => {
         last_data_time = Date.parse(data['time']);
         let dt = (Date.now() - last_data_time) / 1000.0;
         dt = Math.round((dt - 3) * 10) / 10;
