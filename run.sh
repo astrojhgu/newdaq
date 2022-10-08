@@ -31,4 +31,4 @@ tmux new -s monitor -d
 tmux split-window -t monitor -d
 tmux next-layout -t monitor
 tmux send-keys -t monitor.1 "cargo run --bin monitor --release" C-m
-tmux send-keys -t monitor.0 "cd monitor_server; python -m http.server" C-m
+tmux send-keys -t monitor.0 "cd monitor_server; python -m http.server --bind ::" C-m
