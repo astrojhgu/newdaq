@@ -125,16 +125,16 @@ impl CommandFrame {
 
 pub enum CmdType {
     Stop = 0x01,
-    SingleBoardSet,       // 1块板卡模式启动 2
-    DoubleBoardSet,       // 2块板卡模式启动 3
-    FiveBoardSet,         // 5块板卡模式启动 4
+    SingleBoardSet,      // 1块板卡模式启动 2
+    DoubleBoardSet,      // 2块板卡模式启动 3
+    FiveBoardSet,        // 5块板卡模式启动 4
     QuerySelfCheckState, // 自检结果查询  5
-    QueryHealthInfo,      // 健康（板卡温度）信息查询 6
-    QueryWorkMode,        // 工作模式查询，具体模式见 enum Work_Mode 中定义 7
-    ModeFor40GB,          // 40GB模式启动8
-    TriggerSet,           // 内外触发设置9
-    ReferenceSet,         // 内外参考设置10
-    ShutDownNow,          // 关机11
+    QueryHealthInfo,     // 健康（板卡温度）信息查询 6
+    QueryWorkMode,       // 工作模式查询，具体模式见 enum Work_Mode 中定义 7
+    ModeFor40GB,         // 40GB模式启动8
+    TriggerSet,          // 内外触发设置9
+    ReferenceSet,        // 内外参考设置10
+    ShutDownNow,         // 关机11
     QueryDataState, // 数据状态是否正常查询（只有当设备工作在相关模式，且正处在工作过程中时，此查询结果有效）12
     Unknown,
 }

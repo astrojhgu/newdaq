@@ -70,16 +70,8 @@ impl Default for DataFrame {
 }
 
 impl DataFrame {
-    pub fn from_raw(src: &[u8]) -> Box<Self> {
-        let mut frame_buf1 = unsafe { Box::<DataFrame>::new_uninit().assume_init() };
-        let frame_buf_ptr = unsafe {
-            std::slice::from_raw_parts_mut(
-                frame_buf1.as_mut() as *mut DataFrame as *mut u8,
-                std::mem::size_of::<DataFrame>(),
-            )
-        };
-        frame_buf_ptr.clone_from_slice(src);
-        frame_buf1
+    pub fn from_raw(src: &[u8]) -> Self {
+        unsafe { std::ptr::read(src.as_ptr() as *const Self) }
     }
 }
 
@@ -101,18 +93,9 @@ impl Default for RawDataFrame {
 }
 
 impl RawDataFrame {
-    pub fn from_raw(x: &[u8]) -> Box<Self> {
+    pub fn from_raw(x: &[u8]) -> Self {
         assert!(x.len() == 4104);
-        let mut result = unsafe { Box::<RawDataFrame>::new_uninit().assume_init() };
-
-        let s = unsafe {
-            std::slice::from_raw_parts_mut(
-                result.as_mut() as *mut RawDataFrame as *mut u8,
-                std::mem::size_of::<Self>(),
-            )
-        };
-        s.clone_from_slice(x);
-        result
+        unsafe { std::ptr::read_unaligned(x.as_ptr() as *const Self) }
     }
 }
 
