@@ -16,7 +16,7 @@
             font-size: 0.65cm;
         }
 
-        .title{
+        .title {
             font-size: 0.75cm;
         }
 
@@ -26,8 +26,12 @@
             min-width: 420px;
         }
 
-        #disk_list{
-            min-width:700px;
+        #tab_state{
+            font-size:0.65cm;
+        }
+
+        #disk_list {
+            min-width: 600px;
         }
     </style>
 </head>
@@ -35,12 +39,6 @@
 
 <body style="background-color: darkblue;color: white;">
     <div class="box">
-        <div class="seamless" id="div_health">
-            <p class="title">板卡温度</p>
-            <ul class="lists" id="temperature_list"></ul>
-        </div>
-
-
         <div class="seamless" id="div_disks">
             <p class="title">磁盘状态</p>
             <ul class="lists" id="disk_list"></ul>
@@ -55,7 +53,15 @@
                 <li id="state"></li>
             </ul>
         </div>
+
     </div>
+    </div>
+    <div id="div_state" class="box">
+        <div class="seamless">
+            <p class="title">设备状态</p>
+            <table id="tab_state">
+            </table>
+        </div>        
     </div>
     <center>
         <h1>全部相位和幅度</h1>

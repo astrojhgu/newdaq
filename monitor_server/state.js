@@ -17,7 +17,7 @@ function translate(s) {
 
 //var timestamp;
 
-function update_state() {
+async function update_state() {
     console.log("state updated");
     fetch("/data/last_msg_time.json?time=" + new Date()).then((response) => response.json())
         .then((data) => {
@@ -51,6 +51,7 @@ function update_state() {
         document.getElementById("data_ts").textContent = textContent;
     })
 
+    /*
     fetch("/data/temperature.json").then((response) => response.json())
         .then((data) => {
             temperature = data["temperature"];
@@ -68,6 +69,65 @@ function update_state() {
             node.appendChild(textnode);
             temperature_list.appendChild(node);
         });
+    */
+    const promises = ["/data/temperature.json", "/data/state.json", "/data/check.json"].map(url => fetch(url).then(response => response.json()));
+    const states = await Promise.all(promises);
+    temperature = states[0]["temperature"]
+    state = states[1]['sta'];
+    check = states[2];
+    
+    const state_table = document.getElementById("tab_state");
+    state_table.innerHTML = "";
+    header = document.createElement("tr");
+    for (x of ["板卡", "温度1", "温度2",
+        "ADC PLL", "04821", "ADC CLK", "FPGA1 CLK",
+        "光口1", "光口2", "光口3", "FPGA2 CLK",
+        "K7光口1", "K7光口2", "板卡状态"]) {
+        const h = document.createElement("th");
+        h.appendChild(document.createTextNode(x));
+        header.appendChild(h);
+    }
+    state_table.appendChild(header);
+
+    for (i = 0; i < 5; ++i) {
+        row = document.createElement("tr");
+        data = [i, temperature[i * 2], temperature[i * 2 + 1],
+            check["self_check_vu9p1"][4 * i + 0],
+            check["self_check_vu9p1"][4 * i + 1],
+            check["self_check_vu9p1"][4 * i + 2],
+            check["self_check_vu9p1"][4 * i + 3],
+            check["self_check_vu9p2"][i],
+            check["self_check_vu9p2"][5 + i],
+            check["self_check_vu9p2"][10 + i],
+            check["self_check_vu9p2"][15 + i],
+            check["self_check_k7"][2 * i],
+            check["self_check_k7"][2 * i + 1],
+            state[i] == 0 ? "正常" : "异常"
+        ];
+
+        var any_error=false;
+        for(j=3;j<13;++j){
+            if (data[j]!=1){
+                any_error=true;
+            }
+        }
+
+        for (d1 of data) {
+            var d = document.createElement("td");
+            d.appendChild(document.createTextNode(d1));
+            row.appendChild(d);
+        }
+        if (state[i]==0 &&!any_error){
+            header.style.backgroundColor="green";
+            row.style.backgroundColor="green";
+        }else{
+            header.style.backgroundColor="red";
+            row.style.backgroundColor="red";
+        }
+
+        state_table.appendChild(row);
+    }
+
 
     fetch("/data/mode.json").then((response) => response.json())
         .then((data) => {
