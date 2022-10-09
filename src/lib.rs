@@ -1,3 +1,5 @@
+#![feature(new_uninit)]
+
 use chrono::{offset::Local, Date, DateTime, Timelike};
 use lockfile::Lockfile;
 use serde::{Deserialize, Serialize};
@@ -64,6 +66,53 @@ impl Default for DataFrame {
             meta_data: MetaData::default(),
             payload: [Complex::<f32>::default(); NCH_PER_PKT],
         }
+    }
+}
+
+impl DataFrame {
+    pub fn from_raw(src: &[u8]) -> Box<Self> {
+        let mut frame_buf1 = unsafe { Box::<DataFrame>::new_uninit().assume_init() };
+        let frame_buf_ptr = unsafe {
+            std::slice::from_raw_parts_mut(
+                frame_buf1.as_mut() as *mut DataFrame as *mut u8,
+                std::mem::size_of::<DataFrame>(),
+            )
+        };
+        frame_buf_ptr.clone_from_slice(src);
+        frame_buf1
+    }
+}
+
+#[derive(Debug, Clone)]
+#[repr(C)]
+pub struct RawDataFrame {
+    //time domain data
+    pub cnt: u64,
+    pub payload: [u16; 2048],
+}
+
+impl Default for RawDataFrame {
+    fn default() -> Self {
+        Self {
+            cnt: 0,
+            payload: [0; 2048],
+        }
+    }
+}
+
+impl RawDataFrame {
+    pub fn from_raw(x: &[u8]) -> Box<Self> {
+        assert!(x.len() == 4104);
+        let mut result = unsafe { Box::<RawDataFrame>::new_uninit().assume_init() };
+
+        let s = unsafe {
+            std::slice::from_raw_parts_mut(
+                result.as_mut() as *mut RawDataFrame as *mut u8,
+                std::mem::size_of::<Self>(),
+            )
+        };
+        s.clone_from_slice(x);
+        result
     }
 }
 

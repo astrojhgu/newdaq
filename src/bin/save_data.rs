@@ -111,7 +111,7 @@ fn main() {
         loop {
             max_nmsg = max_nmsg.max(receiver.len());
 
-            let frame_buf1: DataFrame = receiver.recv().unwrap();
+            let frame_buf1: Box<DataFrame> = receiver.recv().unwrap();
 
             if last_meta_data.gcnt + 1 != frame_buf1.meta_data.gcnt {
                 dropped = true;
@@ -236,6 +236,7 @@ fn main() {
     loop {
         match cap.next_packet() {
             Ok(pkt) if pkt.data.len() == PKT_LEN => {
+                /*
                 let mut frame_buf1 = DataFrame::default();
 
                 let frame_buf_ptr = unsafe {
@@ -248,6 +249,8 @@ fn main() {
                 let data = pkt.data;
 
                 frame_buf_ptr.clone_from_slice(data);
+                */
+                let frame_buf1=DataFrame::from_raw(pkt.data);
 
                 sender.send(frame_buf1).unwrap();
 
