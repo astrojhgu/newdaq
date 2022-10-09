@@ -13,10 +13,10 @@ fn main() {
 
     let msgs = vec![
         CmdEnum::HealthInfo(ctrl_msg::HealthInfo::default()),
-        CmdEnum::SelfCheckStatus(ctrl_msg::SelfCheckStatus::default()),
+        CmdEnum::SelfCheckState(ctrl_msg::SelfCheckState::default()),
         CmdEnum::WorkMode(ctrl_msg::WorkMode::default()),
         CmdEnum::FiveBoard(ctrl_msg::FiveBoard::new(3000)),
-        CmdEnum::DataStatus(ctrl_msg::DataStatus::default()),
+        CmdEnum::DataState(ctrl_msg::DataState::default()),
         CmdEnum::Stop(ctrl_msg::Stop::default()),
         CmdEnum::Shutdown(ctrl_msg::Shutdown::default()),
         CmdEnum::GB40(gb40),

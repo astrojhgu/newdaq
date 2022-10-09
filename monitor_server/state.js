@@ -17,9 +17,8 @@ function translate(s) {
 
 //var timestamp;
 
-
-var t = setInterval(function () {
-    console.log("State updated");
+function update_state() {
+    console.log("state updated");
     fetch("/data/last_msg_time.json?time=" + new Date()).then((response) => response.json())
         .then((data) => {
             timestamp = Date.parse(data["time"]);
@@ -64,18 +63,22 @@ var t = setInterval(function () {
                 node.appendChild(textnode);
                 temperature_list.appendChild(node);
             }
+            const node = document.createElement("li");
+            const textnode = document.createTextNode("K7 : " + temperature[10]);
+            node.appendChild(textnode);
+            temperature_list.appendChild(node);
         });
 
     fetch("/data/mode.json").then((response) => response.json())
         .then((data) => {
             if (data["mode"] == 3) {
-                document.getElementById("status").textContent = "状态： 运行中"
-                document.getElementById("status").style.backgroundColor = "green";
-                //document.getElementById("div_status").style.backgroundColor = "darkblue";
+                document.getElementById("state").textContent = "状态： 运行中"
+                document.getElementById("state").style.backgroundColor = "green";
+                //document.getElementById("div_tate").style.backgroundColor = "darkblue";
             } else {
-                document.getElementById("status").textContent = "状态： 停止"
-                document.getElementById("status").style.backgroundColor = "red";
-                //document.getElementById("div_status").style.backgroundColor = "red";
+                document.getElementById("state").textContent = "状态： 停止"
+                document.getElementById("state").style.backgroundColor = "red";
+                //document.getElementById("div_tate").style.backgroundColor = "red";
 
             }
         });
@@ -97,7 +100,7 @@ var t = setInterval(function () {
                 } else if (data[dev]['state'] == "Spare") {
                     node.style.backgroundColor = "yellow";
                     node.style.color = "green";
-                }else if (data[dev]['state']=="Remounted"){
+                } else if (data[dev]['state'] == "Remounted") {
                     node.style.backgroundColor = "cyan";
                     node.style.color = "magenta";
                 }
@@ -106,7 +109,9 @@ var t = setInterval(function () {
             }
         });
     document.getElementById("current_time").innerHTML = (new Date()).toLocaleString('zh-CN');
-}, 1000);
+}
+
+var t = setInterval(update_state, 1000);
 
 const ants = [
     "E01", "E02", "E03", "E04", "E05",

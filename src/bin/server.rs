@@ -85,18 +85,18 @@ fn main() {
                 let mut outfile = File::create("/dev/shm/mode.json").unwrap();
                 to_json(&mut outfile, &x).unwrap();
             }
-            CmdEnum::SelfCheckStatus(x) => {
+            CmdEnum::SelfCheckState(x) => {
                 let mut outfile = File::create("/dev/shm/check.yaml").unwrap();
                 to_yaml(&mut outfile, &x).unwrap();
 
                 let mut outfile = File::create("/dev/shm/check.json").unwrap();
                 to_json(&mut outfile, &x).unwrap();
             }
-            CmdEnum::DataStatus(x) => {
-                let mut outfile = File::create("/dev/shm/status.yaml").unwrap();
+            CmdEnum::DataState(x) => {
+                let mut outfile = File::create("/dev/shm/state.yaml").unwrap();
                 to_yaml(&mut outfile, &x).unwrap();
 
-                let mut outfile = File::create("/dev/shm/status.json").unwrap();
+                let mut outfile = File::create("/dev/shm/state.json").unwrap();
                 to_json(&mut outfile, &x).unwrap();
             }
             _ => {}

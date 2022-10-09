@@ -1,4 +1,4 @@
-- !SelfCheckStatus
+- !SelfCheckState
   self_check_vu9p1:
   - 0
   - 0
@@ -52,7 +52,7 @@
   - 0
   - 0
   - 0
-- !DataStatus
+- !DataState
   sta:
   - 0
   - 0

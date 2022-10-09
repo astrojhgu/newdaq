@@ -64,9 +64,9 @@ impl CommandFrame {
                 gb40.from_data(&self.data[..4 * (sz1 + 2 * sz2)]);
                 gb40
             }),
-            QueryDataStatus => Box::new(
-                DataStatus::unpack_from_slice(
-                    &self.data[..<DataStatus as PackedStruct>::ByteArray::len()],
+            QueryDataState => Box::new(
+                DataState::unpack_from_slice(
+                    &self.data[..<DataState as PackedStruct>::ByteArray::len()],
                 )
                 .unwrap(),
             ),
@@ -76,9 +76,9 @@ impl CommandFrame {
                 )
                 .unwrap(),
             ),
-            QuerySelfCheckStatus => Box::new(
-                SelfCheckStatus::unpack_from_slice(
-                    &self.data[..<SelfCheckStatus as PackedStruct>::ByteArray::len()],
+            QuerySelfCheckState => Box::new(
+                SelfCheckState::unpack_from_slice(
+                    &self.data[..<SelfCheckState as PackedStruct>::ByteArray::len()],
                 )
                 .unwrap(),
             ),
@@ -128,14 +128,14 @@ pub enum CmdType {
     SingleBoardSet,       // 1块板卡模式启动 2
     DoubleBoardSet,       // 2块板卡模式启动 3
     FiveBoardSet,         // 5块板卡模式启动 4
-    QuerySelfCheckStatus, // 自检结果查询  5
+    QuerySelfCheckState, // 自检结果查询  5
     QueryHealthInfo,      // 健康（板卡温度）信息查询 6
     QueryWorkMode,        // 工作模式查询，具体模式见 enum Work_Mode 中定义 7
     ModeFor40GB,          // 40GB模式启动8
     TriggerSet,           // 内外触发设置9
     ReferenceSet,         // 内外参考设置10
     ShutDownNow,          // 关机11
-    QueryDataStatus, // 数据状态是否正常查询（只有当设备工作在相关模式，且正处在工作过程中时，此查询结果有效）12
+    QueryDataState, // 数据状态是否正常查询（只有当设备工作在相关模式，且正处在工作过程中时，此查询结果有效）12
     Unknown,
 }
 
@@ -146,14 +146,14 @@ impl CmdType {
             0x02 => CmdType::SingleBoardSet,
             0x03 => CmdType::DoubleBoardSet,
             0x04 => CmdType::FiveBoardSet,
-            0x05 => CmdType::QuerySelfCheckStatus,
+            0x05 => CmdType::QuerySelfCheckState,
             0x06 => CmdType::QueryHealthInfo,
             0x07 => CmdType::QueryWorkMode,
             0x08 => CmdType::ModeFor40GB,
             0x09 => CmdType::TriggerSet,
             0x0a => CmdType::ReferenceSet,
             0x0b => CmdType::ShutDownNow,
-            0x0c => CmdType::QueryDataStatus,
+            0x0c => CmdType::QueryDataState,
             _ => CmdType::Unknown,
         }
     }
@@ -283,19 +283,19 @@ impl Command for FiveBoard {
 
 #[derive(Clone, Copy, PackedStruct, PartialEq, Eq, Debug, Serialize, Deserialize, Default)]
 #[packed_struct(endian = "lsb")]
-pub struct SelfCheckStatus {
+pub struct SelfCheckState {
     pub self_check_vu9p1: [u8; 20],
     pub self_check_vu9p2: [u8; 20],
     pub self_check_k7: [u8; 10],
 }
 
-impl Command for SelfCheckStatus {
+impl Command for SelfCheckState {
     fn cmd_type(&self) -> CmdType {
-        CmdType::QuerySelfCheckStatus
+        CmdType::QuerySelfCheckState
     }
 
     fn cmd_string(&self) -> String {
-        let mut result = "SelfCheckStatus:\n".to_string();
+        let mut result = "SelfCheckState:\n".to_string();
         for i in 0..NBOARD {
             let s = format!(
                 "{} {} {} {} | {} {} {} {} | {} {} \n",
@@ -327,7 +327,7 @@ impl Command for SelfCheckStatus {
     }
 
     fn to_enum(&self) -> CmdEnum {
-        CmdEnum::SelfCheckStatus(*self)
+        CmdEnum::SelfCheckState(*self)
     }
 }
 
@@ -613,18 +613,18 @@ impl Command for WorkMode {
 
 #[derive(Clone, Copy, PackedStruct, PartialEq, Eq, Debug, Serialize, Deserialize, Default)]
 #[packed_struct(endian = "lsb")]
-pub struct DataStatus {
+pub struct DataState {
     pub sta: [u32; 5],
 }
 
-impl Command for DataStatus {
+impl Command for DataState {
     fn cmd_type(&self) -> CmdType {
-        CmdType::QueryDataStatus
+        CmdType::QueryDataState
     }
 
     fn cmd_string(&self) -> String {
         format!(
-            "DataStatus: {} {} {} {} {}\n",
+            "DataState: {} {} {} {} {}\n",
             self.sta[0], self.sta[1], self.sta[2], self.sta[3], self.sta[4]
         )
     }
@@ -641,7 +641,7 @@ impl Command for DataStatus {
     }
 
     fn to_enum(&self) -> CmdEnum {
-        CmdEnum::DataStatus(*self)
+        CmdEnum::DataState(*self)
     }
 }
 
@@ -711,13 +711,13 @@ pub enum CmdEnum {
     SingleBoard(SingleBoard),
     DoubleBoard(DoubleBoard),
     FiveBoard(FiveBoard),
-    SelfCheckStatus(SelfCheckStatus),
+    SelfCheckState(SelfCheckState),
     HealthInfo(HealthInfo),
     GB40(GB40),
     Trigger(Trigger),
     Reference(Reference),
     WorkMode(WorkMode),
-    DataStatus(DataStatus),
+    DataState(DataState),
     Shutdown(Shutdown),
     Stop(Stop),
 }
@@ -728,13 +728,13 @@ impl CmdEnum {
             CmdEnum::SingleBoard(a) => Box::new(*a),
             CmdEnum::DoubleBoard(a) => Box::new(*a),
             CmdEnum::FiveBoard(a) => Box::new(*a),
-            CmdEnum::SelfCheckStatus(a) => Box::new(*a),
+            CmdEnum::SelfCheckState(a) => Box::new(*a),
             CmdEnum::HealthInfo(a) => Box::new(*a),
             CmdEnum::GB40(a) => Box::new(*a),
             CmdEnum::Trigger(a) => Box::new(*a),
             CmdEnum::Reference(a) => Box::new(*a),
             CmdEnum::WorkMode(a) => Box::new(*a),
-            CmdEnum::DataStatus(a) => Box::new(*a),
+            CmdEnum::DataState(a) => Box::new(*a),
             CmdEnum::Shutdown(a) => Box::new(*a),
             CmdEnum::Stop(a) => Box::new(*a),
         }
