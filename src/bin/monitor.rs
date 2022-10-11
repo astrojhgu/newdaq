@@ -8,6 +8,8 @@ use std::{
     path::PathBuf,
 };
 
+use named_lock::NamedLock;
+
 use chrono::offset::Local;
 
 use newdaq::{Cfg, NANTS, NCH, NCORR};
@@ -22,6 +24,7 @@ const IMG_DIR_STR: &str = "/dev/shm/imgs";
 const DATA_FILE_NAME: &str = "/dev/shm/dump.bin";
 const CORR_PROD_FILE_NAME: &str = "/dev/shm/corr_prod.txt";
 const CFG_FILE_NAME: &str = "/dev/shm/cfg.yaml";
+const DEBUG: bool = false;
 
 #[derive(Debug, Deserialize, Clone, Copy)]
 struct CpRecord {
@@ -31,49 +34,66 @@ struct CpRecord {
 }
 
 fn read_payload(fname: &str) -> Vec<Complex32> {
+    let lock = NamedLock::create("daq_dump_lock").unwrap();
     loop {
-        if let Ok(mut infile) = File::open(fname) {
-            let mut buffer = vec![Complex32::new(0.0, 0.0); NCH * NCORR];
-            let data = unsafe {
-                std::slice::from_raw_parts_mut(
-                    buffer.as_mut_ptr() as *mut u8,
-                    buffer.len() * size_of::<Complex32>(),
-                )
-            };
-
-            if infile.read_exact(data).is_ok() {
-                break buffer;
-            } else {
-                println!("file not ready, try again after 100 ms");
+        {
+            let _guard = lock.lock().unwrap();
+            if DEBUG {
+                std::fs::copy("/dev/shm/dump.bin", "/dev/shm/back/dump.bin").unwrap();
+                std::fs::copy("/dev/shm/corr_prod.txt", "/dev/shm/back/corr_prod.txt").unwrap();
             }
-        } else {
-            println!("file not opened, try again after 100 ms");
+            //
+            print!("L:{} ", fname);
+            if let Ok(mut infile) = File::open(fname) {
+                let mut buffer = vec![Complex32::new(0.0, 0.0); NCH * NCORR];
+                let data = unsafe {
+                    std::slice::from_raw_parts_mut(
+                        buffer.as_mut_ptr() as *mut u8,
+                        buffer.len() * size_of::<Complex32>(),
+                    )
+                };
+
+                if infile.read_exact(data).is_ok() {
+                    print!("R");
+                    break buffer;
+                } else {
+                    println!("file not ready, try again after 100 ms");
+                }
+            } else {
+                println!("file not opened, try again after 100 ms");
+            }
         }
         std::thread::sleep(std::time::Duration::from_millis(100));
     }
 }
 
 fn read_corr_prod(fname: &str) -> Vec<CpRecord> {
+    let lock = NamedLock::create("daq_dump_lock").unwrap();
     loop {
-        let mut rdr = csv::ReaderBuilder::new()
-            .has_headers(false)
-            .delimiter(b' ')
-            .from_reader(loop {
-                if let Ok(f) = File::open(fname) {
-                    break f;
-                }
-            });
-        let result = rdr
-            .deserialize()
-            .filter_map(|x| x.ok())
-            //.filter(|x| x.is_ok())
-            //.map(|x: Result<CpRecord, _>| x.unwrap())
-            .collect::<Vec<_>>();
-        if result.len() == NCORR {
-            break result;
-        } else {
-            println!("corr prod not ready");
-            std::thread::sleep(std::time::Duration::from_millis(100));
+        {
+            let _guard = lock.lock().unwrap();
+            print!("L");
+            let mut rdr = csv::ReaderBuilder::new()
+                .has_headers(false)
+                .delimiter(b' ')
+                .from_reader(loop {
+                    if let Ok(f) = File::open(fname) {
+                        break f;
+                    }
+                });
+            let result = rdr
+                .deserialize()
+                .filter_map(|x| x.ok())
+                //.filter(|x| x.is_ok())
+                //.map(|x: Result<CpRecord, _>| x.unwrap())
+                .collect::<Vec<_>>();
+            if result.len() == NCORR {
+                println!("R");
+                break result;
+            } else {
+                println!("corr prod not ready");
+                std::thread::sleep(std::time::Duration::from_millis(100));
+            }
         }
     }
 }
@@ -244,6 +264,10 @@ fn plot_spec_all(
         //root1.present().unwrap()
     }
     root.present().unwrap();
+    if DEBUG {
+        std::fs::copy("/dev/shm/imgs/spec_all.png", "/dev/shm/back/spec_all.png").unwrap();
+    }
+    //
 }
 
 fn update() {
@@ -262,6 +286,7 @@ fn update() {
     );
 
     let payload = read_payload(DATA_FILE_NAME);
+    //let payload = read_payload("/dev/shm/back/dump.bin");
 
     let corr_prod = read_corr_prod(CORR_PROD_FILE_NAME);
     let corr_prod_map =
@@ -281,6 +306,21 @@ fn update() {
             &freq,
         );
     }
+
+    /*
+    for (i,aid1) in stations.iter().enumerate(){
+        for aid2 in &stations[i..]{
+            plot_spec(
+                aid1,
+                aid2,
+                &payload,
+                &corr_prod_map,
+                &station_ant_map,
+                &freq,
+            );  
+        }
+    }*/
+
     plot_spec_all(&payload, &corr_prod_map, &station_ant_map, &freq);
 }
 
@@ -289,6 +329,8 @@ fn main() {
         update();
         let now = Local::now();
         println!("{:?}", now);
-        std::thread::sleep(std::time::Duration::from_secs(10));
+
+
+        std::thread::sleep(std::time::Duration::from_millis(100));
     }
 }

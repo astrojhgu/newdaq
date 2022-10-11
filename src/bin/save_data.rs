@@ -1,3 +1,4 @@
+use named_lock::NamedLock;
 use serde_json::to_writer;
 use serde_yaml::from_reader;
 
@@ -106,6 +107,7 @@ fn main() {
     let _ = std::thread::spawn(move || {
         let mut last_meta_data = MetaData::default();
         let mut corr_prod = vec![(0, 0); NCORR];
+        let mut corr_prod0: Option<Vec<(usize, usize)>> = None;
         let mut now = Local::now();
         let mut max_nmsg = 0;
         loop {
@@ -131,9 +133,6 @@ fn main() {
                     )
                 };
 
-                let mut outfile = File::create("/dev/shm/dump.bin").unwrap();
-                outfile.write_all(disk_data).unwrap();
-
                 let ts = TimeStamp {
                     time: format!("{:?}", now),
                 };
@@ -142,14 +141,42 @@ fn main() {
                 to_writer(&mut outfile, &ts).unwrap();
 
                 if !dropped && !dry_run {
+                    if let Some(ref c) = corr_prod0 {
+                        if !(c.iter().zip(corr_prod.iter()).all(|(a, b)| a == b)) {
+                            println!("*****WARNING!!! corr_prod changed*****");
+                            let mut corr_prod_file =
+                                File::create("/dev/shm/corr_prod.txt").unwrap();
+                            for (i, p) in corr_prod.iter().enumerate() {
+                                writeln!(&mut corr_prod_file, "{} {} {}", i, p.0, p.1).unwrap();
+                            }
+                        }
+                    }
+                    corr_prod0 = Some(corr_prod.clone());
+
+                    let lock = NamedLock::create("daq_dump_lock").unwrap();
+
+                    if let Ok(_guard) = lock.try_lock() {
+                        print!("L");
+                        let mut outfile = File::create("/dev/shm/dump.bin").unwrap();
+                        outfile.write_all(disk_data).unwrap();
+                        outfile.flush().unwrap();
+
+                        if !std::path::Path::new("/dev/shm/corr_prod.txt").exists() {
+                            let mut corr_prod_file =
+                                File::create("/dev/shm/corr_prod.txt").unwrap();
+                            for (i, p) in corr_prod.iter().enumerate() {
+                                writeln!(&mut corr_prod_file, "{} {} {}", i, p.0, p.1).unwrap();
+                            }
+                        }
+                        println!("R");
+                    } else {
+                        println!("dump file lock failed, skip this round");
+                    }
+
                     //write data
 
                     let outdir = storage.get_out_dir(now);
                     let _guard = writing_lock1.lock().unwrap();
-                    let mut corr_prod_file = File::create("/dev/shm/corr_prod.txt").unwrap();
-                    for (i, p) in corr_prod.iter().enumerate() {
-                        writeln!(&mut corr_prod_file, "{} {} {}", i, p.0, p.1).unwrap();
-                    }
 
                     let time_str = format!("{}", now.format("%a %b %d %T %Y"));
                     let date_str = format!("{}", now.format("%Y%m%d"));
