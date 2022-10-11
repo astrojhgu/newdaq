@@ -32,6 +32,7 @@ fn main() {
     let cmds: Vec<CmdEnum> = from_reader(&mut infile).unwrap();
 
     for cmd in cmds {
+        println!("{:?}", cmd);
         let cmd = cmd.get_cmd();
         let cmd = CommandFrame::from_msg(&*cmd);
         let data = cmd.pack().unwrap();

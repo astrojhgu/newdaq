@@ -42,6 +42,7 @@ impl CommandFrame {
 
     pub fn get_cmd(&self) -> Box<dyn Command> {
         let cmd_type = CmdType::from_u8(self.info_func);
+        println!("{:?}", cmd_type);
         use CmdType::*;
 
         match cmd_type {
@@ -100,6 +101,12 @@ impl CommandFrame {
                 )
                 .unwrap(),
             ),
+            Reboot => Box::new(
+                crate::ctrl_msg::Reboot::unpack_from_slice(
+                    &self.data[..<crate::ctrl_msg::Reboot as PackedStruct>::ByteArray::len()],
+                )
+                .unwrap(),
+            ),
             SingleBoardSet => Box::new(
                 SingleBoard::unpack_from_slice(
                     &self.data[..<SingleBoard as PackedStruct>::ByteArray::len()],
@@ -123,6 +130,7 @@ impl CommandFrame {
     }
 }
 
+#[derive(Debug)]
 pub enum CmdType {
     Stop = 0x01,
     SingleBoardSet,      // 1块板卡模式启动 2
@@ -136,6 +144,7 @@ pub enum CmdType {
     ReferenceSet,        // 内外参考设置10
     ShutDownNow,         // 关机11
     QueryDataState, // 数据状态是否正常查询（只有当设备工作在相关模式，且正处在工作过程中时，此查询结果有效）12
+    Reboot, 
     Unknown,
 }
 
@@ -154,6 +163,7 @@ impl CmdType {
             0x0a => CmdType::ReferenceSet,
             0x0b => CmdType::ShutDownNow,
             0x0c => CmdType::QueryDataState,
+            0x0d => CmdType::Reboot,
             _ => CmdType::Unknown,
         }
     }
@@ -706,6 +716,36 @@ impl Command for Stop {
     }
 }
 
+#[derive(Clone, Copy, PackedStruct, PartialEq, Eq, Debug, Serialize, Deserialize, Default)]
+#[packed_struct(endian = "lsb")]
+pub struct Reboot {
+    pub _x: u8,
+}
+
+impl Command for Reboot {
+    fn cmd_type(&self) -> CmdType {
+        CmdType::Reboot
+    }
+
+    fn cmd_string(&self) -> String {
+        "Reboot".to_string()
+    }
+
+    fn fill_data(&self, d: &mut [u8]) -> usize {
+        let sz = <Self as PackedStruct>::ByteArray::len();
+        self.pack_to_slice(&mut d[..sz]).unwrap();
+        sz
+    }
+
+    fn from_data(&mut self, d: &[u8]) {
+        let sz = <Self as PackedStruct>::ByteArray::len();
+        *self = Self::unpack_from_slice(&d[..sz]).unwrap();
+    }
+    fn to_enum(&self) -> CmdEnum {
+        CmdEnum::Reboot(*self)
+    }
+}
+
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Serialize, Deserialize)]
 pub enum CmdEnum {
     SingleBoard(SingleBoard),
@@ -720,6 +760,7 @@ pub enum CmdEnum {
     DataState(DataState),
     Shutdown(Shutdown),
     Stop(Stop),
+    Reboot(Reboot),
 }
 
 impl CmdEnum {
@@ -737,6 +778,10 @@ impl CmdEnum {
             CmdEnum::DataState(a) => Box::new(*a),
             CmdEnum::Shutdown(a) => Box::new(*a),
             CmdEnum::Stop(a) => Box::new(*a),
+            CmdEnum::Reboot(a)=>{
+                println!("a");
+                Box::new(*a)
+            },
         }
     }
 }
