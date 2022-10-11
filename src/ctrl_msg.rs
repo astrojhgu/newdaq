@@ -42,7 +42,7 @@ impl CommandFrame {
 
     pub fn get_cmd(&self) -> Box<dyn Command> {
         let cmd_type = CmdType::from_u8(self.info_func);
-        println!("{:?}", cmd_type);
+        //println!("{:?}", cmd_type);
         use CmdType::*;
 
         match cmd_type {
@@ -144,7 +144,7 @@ pub enum CmdType {
     ReferenceSet,        // 内外参考设置10
     ShutDownNow,         // 关机11
     QueryDataState, // 数据状态是否正常查询（只有当设备工作在相关模式，且正处在工作过程中时，此查询结果有效）12
-    Reboot, 
+    Reboot,
     Unknown,
 }
 
@@ -778,10 +778,7 @@ impl CmdEnum {
             CmdEnum::DataState(a) => Box::new(*a),
             CmdEnum::Shutdown(a) => Box::new(*a),
             CmdEnum::Stop(a) => Box::new(*a),
-            CmdEnum::Reboot(a)=>{
-                println!("a");
-                Box::new(*a)
-            },
+            CmdEnum::Reboot(a) => Box::new(*a),
         }
     }
 }

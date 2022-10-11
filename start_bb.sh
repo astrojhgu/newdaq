@@ -12,7 +12,7 @@ done
 
 if cat /dev/shm/mode.yaml | awk -F : '{print $2}' | grep 4 >/dev/null; then
     echo "already in BB mode"
-else
+elif cat /dev/shm/mode.yaml | awk -F : '{print $2}' | grep 3 >/dev/null; then
     cargo run --bin send --release -- --add 192.168.1.88:8888 -c stop.yaml
     rm -f dev_reply.log
     sleep 5
@@ -21,8 +21,9 @@ else
         sleep 10
         echo "waiting for the dev"
     done
-    cargo run --bin send --release -- --add 192.168.1.88:8888 -c gb40.yaml
 fi
+
+cargo run --bin send --release -- --add 192.168.1.88:8888 -c gb40.yaml
 
 rm -f dev_reply.log
 cargo run --bin send --release -- --add 192.168.1.88:8888 -c state.yaml
