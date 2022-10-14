@@ -74,16 +74,16 @@ fn main() {
                 let t1=chrono::offset::Local::now();
                 let dur=t1-t0;
                 let ms=dur.num_milliseconds();
-                let pps=pkt_cnt as f64/ms as f64*1000.0;
-                let Bps=pps*8242.00/1e9;
-                println!("{} {} {}", pkt_cnt, pps, Bps);
+                let packets_per_sec=pkt_cnt as f64/ms as f64*1000.0;
+                let bytes_per_sec=packets_per_sec*8242.00/1e9;
+                println!("{} {} {}", pkt_cnt, packets_per_sec, bytes_per_sec);
             }
             if last_cnt + 1 != frame_buf1.cnt && i != 0 {
                 print!("dropped {} ", frame_buf1.cnt - last_cnt + 1);
             }
             //eprintln!("{} {} {} {} {} {}", bid1, pid1, bid2, pid2, pcnt, gcnt);
             //std::process::exit(0);
-            let ptr = unsafe {
+            let _ptr = unsafe {
                 std::slice::from_raw_parts(&frame_buf1.payload as *const i16 as *const u8, 8192)
             };
             //outfile.write_all(ptr).unwrap();
