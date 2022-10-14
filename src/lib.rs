@@ -5,8 +5,11 @@ use lockfile::Lockfile;
 use serde::{Deserialize, Serialize};
 use std::{default::Default, fs::File, path::PathBuf};
 use sysinfo::{DiskExt, System, SystemExt};
-
 use num_complex::Complex;
+
+use byteorder::{
+    BigEndian, ByteOrder  
+};
 
 pub mod ctrl_msg;
 
@@ -96,6 +99,35 @@ impl RawDataFrame {
     pub fn from_raw(x: &[u8]) -> Self {
         assert!(x.len() == 4104);
         unsafe { std::ptr::read_unaligned(x.as_ptr() as *const Self) }
+    }
+}
+
+#[derive(Debug, Clone)]
+#[repr(C)]
+pub struct LaceDataFrame {
+    //time domain data
+    pub payload: [i16; 4096],
+    _reserve: u32, 
+    pub cnt: u32,
+}
+
+impl Default for LaceDataFrame {
+    fn default() -> Self {
+        Self {
+            payload: [0; 4096],
+            _reserve: 0,
+            cnt: 0,
+        }
+    }
+}
+
+impl LaceDataFrame {
+    pub fn from_raw(x: &[u8]) -> Self {
+        assert!(x.len() == 8200);
+        let mut result=std::mem::MaybeUninit::<Self>::uninit();
+        BigEndian::read_i16_into(&x[..8192], &mut unsafe{&mut *result.as_mut_ptr()}.payload);
+        unsafe{&mut *result.as_mut_ptr()}.cnt=BigEndian::read_u32(&x[8196..]);
+        unsafe{result.assume_init()}
     }
 }
 
