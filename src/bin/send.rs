@@ -44,6 +44,6 @@ fn main() {
             udp.send_to(&data, &addr).unwrap();
         }
 
-        std::thread::sleep(std::time::Duration::from_millis(1000));
+        std::thread::sleep(std::time::Duration::from_millis(100));
     }
 }

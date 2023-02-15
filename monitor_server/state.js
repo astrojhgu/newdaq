@@ -102,7 +102,7 @@ async function update_state() {
             check["self_check_vu9p2"][15 + i],
             check["self_check_k7"][2 * i],
             check["self_check_k7"][2 * i + 1],
-            state[i] == 0 ? "正常" : "异常"
+            state[i] == 0 ? "正常:0" : (1?"异常:1":"异常:2")
         ];
 
         var any_error=false;

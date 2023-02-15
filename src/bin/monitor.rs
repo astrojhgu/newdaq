@@ -134,7 +134,7 @@ fn plot_spec(
         .margin(5)
         .x_label_area_size(30)
         .y_label_area_size(30)
-        .build_cartesian_2d(freq[0]..freq[freq.len() - 1], 50_f32..100_f32)
+        .build_cartesian_2d(freq[0]..freq[freq.len() - 1], 50_f32..120_f32)
         .unwrap();
     chart.configure_mesh().draw().unwrap();
 
@@ -229,7 +229,7 @@ fn plot_spec_all(
             let data = &spec[ncorr * NCH..(ncorr + 1) * NCH];
             let mut chart = ChartBuilder::on(root1)
                 .margin(5)
-                .build_cartesian_2d(freq[0]..freq[freq.len() - 1], 50_f32..100_f32)
+                .build_cartesian_2d(freq[0]..freq[freq.len() - 1], 50_f32..120_f32)
                 .unwrap();
             //chart.configure_mesh().draw().unwrap();
 
