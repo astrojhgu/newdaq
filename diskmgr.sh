@@ -136,5 +136,6 @@ while :; do
     sleep 5
     format_all
     inspect_disks
+    rm -f storcli.log*
     sleep 30
 done

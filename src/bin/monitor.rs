@@ -155,7 +155,7 @@ fn plot_spec(
         .margin(5)
         .x_label_area_size(30)
         .y_label_area_size(30)
-        .build_cartesian_2d(freq[0]..freq[freq.len() - 1], -30_f32..30_f32)
+        .build_cartesian_2d(freq[0]..freq[freq.len() - 1], -180_f32..180_f32)
         .unwrap();
     chart.configure_mesh().draw().unwrap();
 
