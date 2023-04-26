@@ -4,7 +4,8 @@ use std::{fs::File, io::Write};
 
 use crossbeam::channel::bounded;
 
-use newdaq::{RawDataFrame, PKT_LEN};
+use newdaq::{RawDataFrame};
+const PKT_LEN:usize=4104
 
 /// Simple program to greet a person
 #[derive(Parser, Debug)]
