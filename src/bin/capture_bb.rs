@@ -5,7 +5,7 @@ use std::{fs::File, io::Write};
 use crossbeam::channel::bounded;
 
 use newdaq::{RawDataFrame};
-const PKT_LEN:usize=4104
+const PKT_LEN:usize=4104;
 
 /// Simple program to greet a person
 #[derive(Parser, Debug)]
@@ -87,13 +87,18 @@ fn main() {
 
     loop {
         match cap.next_packet() {
-            Ok(pkt) if pkt.data.len() == PKT_LEN => {
-                let frame_buf1 = RawDataFrame::from_raw(pkt.data);
+            Ok(pkt) if pkt.data.len() == 4146 => {
+                let frame_buf1 = RawDataFrame::from_raw(&pkt.data[42..]);
 
                 sender.send(frame_buf1).unwrap();
             }
+            Ok(pkt) =>{
+                eprintln!("{}", pkt.data.len());
+            }
             Err(e) => println!("{:?}", e),
-            _ => (),
+            _ => {
+                //eprintln!("{}", pkt.data.len());
+            },
         }
     }
 }
